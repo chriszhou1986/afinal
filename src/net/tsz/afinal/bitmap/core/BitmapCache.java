@@ -29,7 +29,7 @@ import java.io.OutputStream;
 
 
 public class BitmapCache {
-	
+
     private static final String TAG = "ImageCache";
 
     //默认的内存缓存大小
@@ -127,7 +127,8 @@ public class BitmapCache {
 
     /**
      * Adds a bitmap to both memory and disk cache.
-     * @param data Unique identifier for the bitmap to store
+     *
+     * @param data   Unique identifier for the bitmap to store
      * @param bitmap The bitmap to store
      */
     public void addBitmapToCache(String data, Bitmap bitmap) {
@@ -142,11 +143,11 @@ public class BitmapCache {
 
         synchronized (mDiskCacheLock) {
             // 添加到硬盘缓存
-            if (mDiskLruCache != null && mDiskLruCache.getDirectory()!= null ) {
-            	
-            	if(!mDiskLruCache.getDirectory().exists())
-            		mDiskLruCache.getDirectory().mkdirs();
-            	
+            if (mDiskLruCache != null && mDiskLruCache.getDirectory() != null) {
+
+                if (!mDiskLruCache.getDirectory().exists())
+                    mDiskLruCache.getDirectory().mkdirs();
+
                 final String key = FileNameGenerator.generator(data);
                 OutputStream out = null;
                 try {
@@ -172,7 +173,8 @@ public class BitmapCache {
                         if (out != null) {
                             out.close();
                         }
-                    } catch (IOException e) {}
+                    } catch (IOException e) {
+                    }
                 }
             }
         }
@@ -193,22 +195,22 @@ public class BitmapCache {
         }
         return null;
     }
-    
-    
-    
+
 
     /**
      * 获取硬盘缓存
+     *
      * @param data
      * @return
      */
     public Bitmap getBitmapFromDiskCache(String data) {
-    	final String key = FileNameGenerator.generator(data);
+        final String key = FileNameGenerator.generator(data);
         synchronized (mDiskCacheLock) {
             while (mDiskCacheStarting) {
                 try {
                     mDiskCacheLock.wait();
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
             }
             if (mDiskLruCache != null) {
                 InputStream inputStream = null;
@@ -228,7 +230,8 @@ public class BitmapCache {
                         if (inputStream != null) {
                             inputStream.close();
                         }
-                    } catch (IOException e) {}
+                    } catch (IOException e) {
+                    }
                 }
             }
             return null;
@@ -240,12 +243,12 @@ public class BitmapCache {
      * this includes disk access so this should not be executed on the main/UI thread.
      */
     public void clearCache() {
-    	clearMemoryCache();
-    	clearDiskCache();
+        clearMemoryCache();
+        clearDiskCache();
     }
-    
-    public void clearDiskCache(){
-    	synchronized (mDiskCacheLock) {
+
+    public void clearDiskCache() {
+        synchronized (mDiskCacheLock) {
             mDiskCacheStarting = true;
             if (mDiskLruCache != null && !mDiskLruCache.isClosed()) {
                 try {
@@ -258,21 +261,21 @@ public class BitmapCache {
             }
         }
     }
-    
-    public void clearMemoryCache(){
-    	if (mMemoryCache != null) {
+
+    public void clearMemoryCache() {
+        if (mMemoryCache != null) {
             mMemoryCache.evictAll();
         }
     }
-    
-    
+
+
     public void clearCache(String key) {
-    	clearMemoryCache(key);
-    	clearDiskCache(key);
+        clearMemoryCache(key);
+        clearDiskCache(key);
     }
-    
-    public void clearDiskCache(String key){
-    	synchronized (mDiskCacheLock) {
+
+    public void clearDiskCache(String key) {
+        synchronized (mDiskCacheLock) {
             if (mDiskLruCache != null && !mDiskLruCache.isClosed()) {
                 try {
                     mDiskLruCache.remove(key);
@@ -282,9 +285,9 @@ public class BitmapCache {
             }
         }
     }
-    
-    public void clearMemoryCache(String key){
-    	if (mMemoryCache != null) {
+
+    public void clearMemoryCache(String key) {
+        if (mMemoryCache != null) {
             mMemoryCache.remove(key);
         }
     }
@@ -323,11 +326,11 @@ public class BitmapCache {
             }
         }
     }
-    
-    
-	public void setCompressFormat(CompressFormat format){
-		this.mCacheParams.setCompressFormat(format);
-	}
+
+
+    public void setCompressFormat(CompressFormat format) {
+        this.mCacheParams.setCompressFormat(format);
+    }
 
     /**
      * A holder class that contains cache parameters.
@@ -347,13 +350,14 @@ public class BitmapCache {
         public ImageCacheParams(File diskCacheDir) {
             this.diskCacheDir = diskCacheDir;
         }
-        
+
         public ImageCacheParams(String diskCacheDir) {
             this.diskCacheDir = new File(diskCacheDir);
         }
 
         /**
-         * 设置缓存大小 
+         * 设置缓存大小
+         *
          * @param context
          * @param percent 百分比，值的范围是在 0.05 到 0.8之间
          */
@@ -364,26 +368,25 @@ public class BitmapCache {
             }
             memCacheSize = Math.round(percent * getMemoryClass(context) * 1024 * 1024);
         }
-        
-        
-		public void setMemCacheSize(int memCacheSize) {
-			this.memCacheSize = memCacheSize;
-		}
 
-		public void setDiskCacheSize(int diskCacheSize) {
-			this.diskCacheSize = diskCacheSize;
-		}
-		
-		public void setCompressFormat(CompressFormat format){
-			this.compressFormat = format;
-		}
 
-		private static int getMemoryClass(Context context) {
+        public void setMemCacheSize(int memCacheSize) {
+            this.memCacheSize = memCacheSize;
+        }
+
+        public void setDiskCacheSize(int diskCacheSize) {
+            this.diskCacheSize = diskCacheSize;
+        }
+
+        public void setCompressFormat(CompressFormat format) {
+            this.compressFormat = format;
+        }
+
+        private static int getMemoryClass(Context context) {
             return ((ActivityManager) context.getSystemService(
                     Context.ACTIVITY_SERVICE)).getMemoryClass();
         }
     }
 
-    
 
 }
