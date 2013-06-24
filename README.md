@@ -47,27 +47,22 @@ db.save(user);
 
 ----
 
-##FinalActivity使用方法：
+##FinalView使用方法(这个分支修改了原来的FinalActivity)：
 * 完全注解方式就可以进行UI绑定和事件绑定
 * 无需findViewById和setClickListener等
 
 ```java
-public class AfinalDemoActivity extends FinalActivity {
-
-    //无需调用findViewById和setOnclickListener等
-    @ViewInject(id=R.id.button,click="btnClick") Button button;
-    @ViewInject(id=R.id.textView) TextView textView;
-
-    public void onCreate(Bundle savedInstanceState) {
-       super.onCreate(savedInstanceState);
-       setContentView(R.layout.main);
-    }
-    
-    public void btnClick(View v){
-       textView.setText("text set form button");
-    }
-}
+......
+//无需调用findViewById和setOnclickListener等
+@ViewInject(id=R.id.button,click="btnClick") Button button;
+@ViewInject(id=R.id.textView) TextView textView;
+......
+//在Activity或View初始化时(onCreate中使用注解对象之前)调用：
+FinalView.init(this);
+......
 ```
+
+
 ##FinalHttp使用方法：
 ###普通get方法
 
