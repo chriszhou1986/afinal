@@ -182,7 +182,7 @@ public class FinalHttp {
     /**
      * 配置错误重试次数
      *
-     * @param retry
+     * @param count
      */
     public void configRequestExecutionRetryCount(int count) {
         this.httpClient.setHttpRequestRetryHandler(new RetryHandler(count));
