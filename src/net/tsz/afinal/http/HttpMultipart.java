@@ -105,7 +105,7 @@ public class HttpMultipart {
      * Creates an instance with the specified settings.
      *
      * @param subType  mime subtype - must not be {@code null}
-     * @param charset  the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
+     * @param charset  the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. UTF-8 - is used.
      * @param boundary to use  - must not be {@code null}
      * @param mode     the mode to use
      * @throws IllegalArgumentException if charset is null or boundary is null
@@ -130,7 +130,7 @@ public class HttpMultipart {
      * Mode is set to {@link HttpMultipartMode#BROWSER_COMPATIBLE}
      *
      * @param subType  mime subtype - must not be {@code null}
-     * @param charset  the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
+     * @param charset  the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. UTF-8 - is used.
      * @param boundary to use  - must not be {@code null}
      * @throws IllegalArgumentException if charset is null or boundary is null
      */

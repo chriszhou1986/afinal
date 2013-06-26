@@ -82,7 +82,7 @@ public class MultipartEntity implements HttpEntity {
      *
      * @param mode     the mode to use, may be {@code null}, in which case {@link HttpMultipartMode#BROWSER_COMPATIBLE} is used
      * @param boundary the boundary string, may be {@code null}, in which case {@link #generateBoundary()} is invoked to create the string
-     * @param charset  the character set to use, may be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
+     * @param charset  the character set to use, may be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. UTF-8 - is used.
      */
     public MultipartEntity(
             HttpMultipartMode mode,

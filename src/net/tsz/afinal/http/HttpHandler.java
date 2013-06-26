@@ -49,7 +49,7 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
     private boolean isResume = false; //是否断点续传
     private String charset;
 
-    public HttpHandler(AbstractHttpClient client, HttpContext context, AsyncCallBack<T> callback, String charset) {
+    public HttpHandler(AbstractHttpClient client, HttpContext context, String charset, AsyncCallBack<T> callback) {
         this.client = client;
         this.context = context;
         this.callback = callback;

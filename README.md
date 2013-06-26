@@ -1,11 +1,11 @@
 
-#afinal交流平台
-* QQ群：192341294（群1）    246710918（群2）
-* 网址：[http://www.afinal.org](http://www.afinal.org)
-
+## 注意:
+* 这个版本是wyouflf的修改版，有少量api调整。修改的地方下面的介绍已经做了调整，有问题可以给我发邮件<wyouflf@gmail.com>。
+* 上传部分进行了重构，解决大文件上传OOM的问题，支持进度显示。
+* FinalActivity以替换为FinalView，修改原来的继承方式为在Activity或自定义View初始化之后调用FinalView.init(this)完成注解解析。
 
 ----
-# ![mahua](http://code.google.com/p/afinal/logo?cct=1351516535) Afinal简介 
+## Afinal简介
 * Afinal 是一个android的sqlite orm 和 ioc 框架。同时封装了android中的http框架，使其更加简单易用；
 * 使用finalBitmap，无需考虑bitmap在android中加载的时候oom的问题和快速滑动的时候图片加载位置错位等问题。
 * Afinal的宗旨是简洁，快速。约定大于配置的方式。尽量一行代码完成所有事情。
@@ -15,7 +15,7 @@
 
 * FinalDB模块：android中的orm框架，一行代码就可以进行增删改查。支持一对多，多对一等查询。
 
-* FinalActivity模块：android中的ioc框架，完全注解方式就可以进行UI绑定和事件绑定。无需findViewById和setClickListener等。
+* FinalView模块：android中的ioc框架，完全注解方式就可以进行UI绑定和事件绑定。无需findViewById和setClickListener等。
 
 * FinalHttp模块：通过httpclient进行封装http数据请求，支持Async方式加载。
 
@@ -144,7 +144,7 @@ fh.get("http://www.yangfuhai.com", new AsyncCallBack(){
   
             });  
 
-	
+
    //调用stop()方法停止下载
    handler.stop();
 
@@ -190,53 +190,7 @@ public View getView(int position, View convertView, ViewGroup parent) {
 	fb.display(iv,Images.imageUrls[position]);
 ```
 
-
----
-**>>> Add by fantouch**
-
-#### 配置成Android Library Project
-*解决需求:有多个项目依赖afinal,并且想修改afinal源码*
->  
-* clone到本地
-* 添加AndroidManifest.xml文件:
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.tsz.afinal" >
-    <uses-sdk
-        android:minSdkVersion="5"
-        android:targetSdkVersion="7" />
-</manifest>
-```
->  
-* 导入到 Eclipse:  
-`Import => Android => Existing Android Code Into Workspace`
-* 工程上按右键 => Properties => Android => √ Is Library
-* 完成,你的项目可以引用这个afinal Library了.
-
-#### 排除不需要Git管理的文件
-*解决需求:想修改源码,但不想让Eclipse把工程弄脏*
->  
-* 忽略已经被Git管理的`./bin`目录:  
-导入Eclipse前执行:  ` git update-index --assume-unchanged ./bin/* `
->  
-* 忽略未被Git管理的文件和目录: 添加`/.gitignore` 文件:  
-```
-/gen
-/assets
-/bin
-/res
-/.classpath
-/.project
-/AndroidManifest.xml
-/project.properties
-/.gitignore
-```  
-* 导入到Eclipse,`git status`可见Repository依旧干净.
-  
-**<<< Add by fantouch**
-
----
+----
 
 #关于作者michael
 * 个人博客：[http://www.yangfuhai.com](http://www.yangfuhai.com)

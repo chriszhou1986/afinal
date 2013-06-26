@@ -337,7 +337,7 @@ public class FinalHttp {
 
     public HttpHandler<File> download(String url, RequestParams params, String target, boolean isResume, AsyncCallBack<File> callback) {
         final HttpGet get = new HttpGet(getUrlWithQueryString(url, params));
-        HttpHandler<File> handler = new HttpHandler<File>(httpClient, httpContext, callback, charset);
+        HttpHandler<File> handler = new HttpHandler<File>(httpClient, httpContext, charset, callback);
         handler.executeOnExecutor(executor, get, target, isResume);
         return handler;
     }
@@ -349,7 +349,7 @@ public class FinalHttp {
             request.addHeader("Content-Type", contentType);
         }
 
-        HttpHandler handler = new HttpHandler(httpClient, httpContext, callBack, charset);
+        HttpHandler handler = new HttpHandler(httpClient, httpContext, charset, callBack);
         if (entity instanceof MultipartEntity) {
             ((MultipartEntity) entity).callBackInfo.callback = handler;
         } else if (entity instanceof UploadFileEntity) {
@@ -364,7 +364,7 @@ public class FinalHttp {
             request.addHeader("Content-Type", contentType);
         }
 
-        new HttpHandler<T>(httpClient, httpContext, callBack, charset).executeOnExecutor(executor, request);
+        new HttpHandler<T>(httpClient, httpContext, charset, callBack).executeOnExecutor(executor, request);
     }
 
     protected Object sendSyncRequest(HttpRequestBase request, String contentType) {

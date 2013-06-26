@@ -150,11 +150,11 @@ public class RequestParams {
      * Returns an HttpEntity containing all request parameters
      */
     public HttpEntity getEntity() {
-        HttpEntity entity = null;
+        HttpEntity result = null;
 
         if (!fileParams.isEmpty()) {
 
-            if (fileParams.size() == 1 && (urlParams == null || urlParams.size() == 0)) {
+            /*if (fileParams.size() == 1 && (urlParams == null || urlParams.size() == 0)) {
                 for (ConcurrentHashMap.Entry<String, ContentBody> entry : fileParams.entrySet()) {
                     ContentBody body = entry.getValue();
                     if (body instanceof FileBody) {
@@ -163,7 +163,7 @@ public class RequestParams {
                         return fileEntity;
                     }
                 }
-            }
+            }*/
 
             MultipartEntity multipartEntity = new MultipartEntity();
 
@@ -180,16 +180,16 @@ public class RequestParams {
                 multipartEntity.addPart(entry.getKey(), entry.getValue());
             }
 
-            entity = multipartEntity;
+            result = multipartEntity;
         } else {
             try {
-                entity = new UrlEncodedFormEntity(getParamsList(), ENCODING);
+                result = new UrlEncodedFormEntity(getParamsList(), ENCODING);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
 
-        return entity;
+        return result;
     }
 
     protected List<BasicNameValuePair> getParamsList() {

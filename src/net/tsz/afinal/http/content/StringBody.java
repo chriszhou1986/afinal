@@ -74,7 +74,7 @@ public class StringBody extends AbstractContentBody {
      *
      * @param text     to be used for the body, not {@code null}
      * @param mimeType the mime type, not {@code null}
-     * @param charset  the character set, may be {@code null}, in which case the US-ASCII charset is used
+     * @param charset  the character set, may be {@code null}, in which case the UTF-8 charset is used
      * @throws java.io.UnsupportedEncodingException
      *
      * @throws IllegalArgumentException if the {@code text} parameter is null
@@ -99,7 +99,7 @@ public class StringBody extends AbstractContentBody {
      * The mime type is set to "text/plain".
      *
      * @param text    to be used for the body, not {@code null}
-     * @param charset the character set, may be {@code null}, in which case the US-ASCII charset is used
+     * @param charset the character set, may be {@code null}, in which case the UTF-8 charset is used
      * @throws java.io.UnsupportedEncodingException
      *
      * @throws IllegalArgumentException if the {@code text} parameter is null
