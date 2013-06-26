@@ -47,7 +47,8 @@ db.save(user);
 
 ----
 
-##FinalView使用方法(这个分支修改了原来的FinalActivity)：
+##FinalView使用方法
+* 修改自原来的FinalActivity
 * 完全注解方式就可以进行UI绑定和事件绑定
 * 无需findViewById和setClickListener等
 
@@ -96,7 +97,7 @@ fh.get("http://www.yangfuhai.com", new AjaxCallBack(){
 文件上传到服务器，服务器如何接收，请查看[这里](http://www.oschina.net/question/105836_85825)
 
 ```java
-  AjaxParams params = new AjaxParams();
+  AsyncParams params = new AsyncParams();
   params.put("username", "michael yang");
   params.put("password", "123456");
   params.put("email", "test@tsz.net");
@@ -105,7 +106,7 @@ fh.get("http://www.yangfuhai.com", new AjaxCallBack(){
   params.put("profile_picture3", new ByteArrayInputStream(bytes)); // 提交字节流
  
   FinalHttp fh = new FinalHttp();
-  fh.post("http://www.yangfuhai.com", params, new AjaxCallBack(){
+  fh.post("http://www.yangfuhai.com", params, new AsyncCallBack(){
   		@Override
  		public void onLoading(long count, long current) {
  				textView.setText(current+"/"+count);
@@ -128,9 +129,9 @@ fh.get("http://www.yangfuhai.com", new AjaxCallBack(){
     FinalHttp fh = new FinalHttp();  
     //调用download方法开始下载
     HttpHandler handler = fh.download("http://www.xxx.com/下载路径/xxx.apk", //这里是下载的路径
-    true,//true:断点续传 false:不断点续传（全新下载）
-    "/mnt/sdcard/testapk.apk", //这是保存到本地的路径
-    new AjaxCallBack() {  
+    "/mnt/sdcard/testapk.apk", //这是保存到本地的路径true,
+    //true:断点续传 false:不断点续传（全新下载）
+    new AsyncCallBack() {
                 @Override  
                 public void onLoading(long count, long current) {  
                      textView.setText("下载进度："+current+"/"+count);  

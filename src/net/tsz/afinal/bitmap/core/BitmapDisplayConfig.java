@@ -28,7 +28,7 @@ public class BitmapDisplayConfig {
 
     private int animationType;
     private Bitmap loadingBitmap;
-    private Bitmap loadfailBitmap;
+    private Bitmap loadFailedBitmap;
 
 
     public int getBitmapWidth() {
@@ -71,12 +71,12 @@ public class BitmapDisplayConfig {
         this.loadingBitmap = loadingBitmap;
     }
 
-    public Bitmap getLoadfailBitmap() {
-        return loadfailBitmap;
+    public Bitmap getLoadFailedBitmap() {
+        return loadFailedBitmap;
     }
 
-    public void setLoadfailBitmap(Bitmap loadfailBitmap) {
-        this.loadfailBitmap = loadfailBitmap;
+    public void setLoadFailedBitmap(Bitmap loadFailedBitmap) {
+        this.loadFailedBitmap = loadFailedBitmap;
     }
 
 

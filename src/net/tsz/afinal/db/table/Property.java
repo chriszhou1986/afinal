@@ -53,7 +53,7 @@ public class Property {
                     set.invoke(receiver, value == null ? (Double) null : Double.parseDouble(value.toString()));
                 } else if (dataType == long.class || dataType == Long.class) {
                     set.invoke(receiver, value == null ? (Long) null : Long.parseLong(value.toString()));
-                } else if (dataType == java.util.Date.class || dataType == java.sql.Date.class) {
+                } else if (dataType == Date.class || dataType == java.sql.Date.class) {
                     set.invoke(receiver, value == null ? (Date) null : stringToDateTime(value.toString()));
                 } else if (dataType == boolean.class || dataType == Boolean.class) {
                     set.invoke(receiver, value == null ? (Boolean) null : "1".equals(value.toString()));
@@ -77,7 +77,6 @@ public class Property {
      * 获取某个实体执行某个方法的结果
      *
      * @param obj
-     * @param method
      * @return
      */
     @SuppressWarnings("unchecked")

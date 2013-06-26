@@ -172,9 +172,9 @@ public abstract class AbstractCollection<E> implements Collection<E> {
     }
 
     /**
-     * Returns an instance of {@link Iterator} that may be used to access the
+     * Returns an instance of {@link java.util.Iterator} that may be used to access the
      * objects contained by this {@code Collection}. The order in which the elements are
-     * returned by the {@link Iterator} is not defined unless the instance of the
+     * returned by the {@link java.util.Iterator} is not defined unless the instance of the
      * {@code Collection} has a defined order.  In that case, the elements are returned in that order.
      * <p/>
      * In this class this method is declared abstract and has to be implemented

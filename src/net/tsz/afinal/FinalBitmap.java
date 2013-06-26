@@ -239,7 +239,7 @@ public class FinalBitmap {
     /**
      * 设置图片正在加载的时候显示的图片
      *
-     * @param bitmap
+     * @param resId
      */
     public FinalBitmap configLoadingImage(int resId) {
         mConfig.defaultDisplayConfig.setLoadingBitmap(BitmapFactory.decodeResource(mContext.getResources(), resId));
@@ -252,7 +252,7 @@ public class FinalBitmap {
      * @param bitmap
      */
     public FinalBitmap configLoadfailImage(Bitmap bitmap) {
-        mConfig.defaultDisplayConfig.setLoadfailBitmap(bitmap);
+        mConfig.defaultDisplayConfig.setLoadFailedBitmap(bitmap);
         return this;
     }
 
@@ -262,7 +262,7 @@ public class FinalBitmap {
      * @param resId
      */
     public FinalBitmap configLoadfailImage(int resId) {
-        mConfig.defaultDisplayConfig.setLoadfailBitmap(BitmapFactory.decodeResource(mContext.getResources(), resId));
+        mConfig.defaultDisplayConfig.setLoadFailedBitmap(BitmapFactory.decodeResource(mContext.getResources(), resId));
         return this;
     }
 
@@ -280,7 +280,7 @@ public class FinalBitmap {
     /**
      * 配置默认图片的小的宽度
      *
-     * @param bitmapHeight
+     * @param bitmapWidth
      */
     public FinalBitmap configBitmapMaxWidth(int bitmapWidth) {
         mConfig.defaultDisplayConfig.setBitmapWidth(bitmapWidth);
@@ -420,7 +420,7 @@ public class FinalBitmap {
             }
         });
 
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_INIT_DISK_CACHE);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_INIT_DISK_CACHE);
 
         return this;
     }
@@ -461,7 +461,7 @@ public class FinalBitmap {
         if (displayConfig == null) {
             displayConfig = getDisplayConfig();
             displayConfig.setLoadingBitmap(loadingBitmap);
-            displayConfig.setLoadfailBitmap(laodfailBitmap);
+            displayConfig.setLoadFailedBitmap(laodfailBitmap);
             configMap.put(String.valueOf(loadingBitmap) + "_" + String.valueOf(laodfailBitmap), displayConfig);
         }
 
@@ -475,7 +475,7 @@ public class FinalBitmap {
             displayConfig.setBitmapHeight(imageHeight);
             displayConfig.setBitmapWidth(imageWidth);
             displayConfig.setLoadingBitmap(loadingBitmap);
-            displayConfig.setLoadfailBitmap(laodfailBitmap);
+            displayConfig.setLoadFailedBitmap(laodfailBitmap);
             configMap.put(imageWidth + "_" + imageHeight + "_" + String.valueOf(loadingBitmap) + "_" + String.valueOf(laodfailBitmap), displayConfig);
         }
 
@@ -525,12 +525,12 @@ public class FinalBitmap {
         config.setAnimationType(mConfig.defaultDisplayConfig.getAnimationType());
         config.setBitmapHeight(mConfig.defaultDisplayConfig.getBitmapHeight());
         config.setBitmapWidth(mConfig.defaultDisplayConfig.getBitmapWidth());
-        config.setLoadfailBitmap(mConfig.defaultDisplayConfig.getLoadfailBitmap());
+        config.setLoadFailedBitmap(mConfig.defaultDisplayConfig.getLoadFailedBitmap());
         config.setLoadingBitmap(mConfig.defaultDisplayConfig.getLoadingBitmap());
         return config;
     }
 
-    private void initDiskCacheInternalInBackgroud() {
+    private void initDiskCacheInternalInBackground() {
         if (mImageCache != null) {
             mImageCache.initDiskCache();
         }
@@ -539,7 +539,7 @@ public class FinalBitmap {
         }
     }
 
-    private void clearCacheInternalInBackgroud() {
+    private void clearCacheInternalInBackground() {
         if (mImageCache != null) {
             mImageCache.clearCache();
         }
@@ -549,13 +549,13 @@ public class FinalBitmap {
     }
 
 
-    private void clearMemoryCacheInBackgroud() {
+    private void clearMemoryCacheInBackground() {
         if (mImageCache != null) {
             mImageCache.clearMemoryCache();
         }
     }
 
-    private void clearDiskCacheInBackgroud() {
+    private void clearDiskCacheInBackground() {
         if (mImageCache != null) {
             mImageCache.clearDiskCache();
         }
@@ -565,26 +565,26 @@ public class FinalBitmap {
     }
 
 
-    private void clearCacheInBackgroud(String key) {
+    private void clearCacheInBackground(String key) {
         if (mImageCache != null) {
             mImageCache.clearCache(key);
         }
     }
 
-    private void clearDiskCacheInBackgroud(String key) {
+    private void clearDiskCacheInBackground(String key) {
         if (mImageCache != null) {
             mImageCache.clearDiskCache(key);
         }
     }
 
-    private void clearMemoryCacheInBackgroud(String key) {
+    private void clearMemoryCacheInBackground(String key) {
         if (mImageCache != null) {
             mImageCache.clearMemoryCache(key);
         }
     }
 
 
-    private void flushCacheInternalInBackgroud() {
+    private void flushCacheInternalInBackground() {
         if (mImageCache != null) {
             mImageCache.flush();
         }
@@ -598,7 +598,7 @@ public class FinalBitmap {
      *
      * @author fantouch
      */
-    private void closeCacheInternalInBackgroud() {
+    private void closeCacheInternalInBackground() {
         if (mImageCache != null) {
             mImageCache.close();
             mImageCache = null;
@@ -629,7 +629,8 @@ public class FinalBitmap {
     /**
      * 网络加载bitmap
      *
-     * @param data
+     * @param uri
+     * @param config
      * @return
      */
     private Bitmap processBitmap(String uri, BitmapDisplayConfig config) {
@@ -707,7 +708,7 @@ public class FinalBitmap {
      * 清除所有缓存（磁盘和内存）
      */
     public void clearCache() {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLEAR);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLEAR);
     }
 
     /**
@@ -716,14 +717,14 @@ public class FinalBitmap {
      * @param key
      */
     public void clearCache(String key) {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLEAR_KEY, key);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLEAR_KEY, key);
     }
 
     /**
      * 清除缓存
      */
     public void clearMemoryCache() {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLEAR_MEMORY);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLEAR_MEMORY);
     }
 
     /**
@@ -732,7 +733,7 @@ public class FinalBitmap {
      * @param key
      */
     public void clearMemoryCache(String key) {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLEAR_KEY_IN_MEMORY, key);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLEAR_KEY_IN_MEMORY, key);
     }
 
 
@@ -740,7 +741,7 @@ public class FinalBitmap {
      * 清除磁盘缓存
      */
     public void clearDiskCache() {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLEAR_DISK);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLEAR_DISK);
     }
 
     /**
@@ -749,7 +750,7 @@ public class FinalBitmap {
      * @param key
      */
     public void clearDiskCache(String key) {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLEAR_KEY_IN_DISK, key);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLEAR_KEY_IN_DISK, key);
     }
 
 
@@ -757,7 +758,7 @@ public class FinalBitmap {
      * 刷新缓存
      */
     public void flushCache() {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_FLUSH);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_FLUSH);
     }
 
     /**
@@ -768,7 +769,7 @@ public class FinalBitmap {
      * @author fantouch
      */
     public void closeCache() {
-        new CacheExecutecTask().execute(CacheExecutecTask.MESSAGE_CLOSE);
+        new CacheExecuteTask().execute(CacheExecuteTask.MESSAGE_CLOSE);
     }
 
     /**
@@ -855,7 +856,7 @@ public class FinalBitmap {
      * @company 探索者网络工作室(www.tsz.net)
      * @created 2012-10-28
      */
-    private class CacheExecutecTask extends AsyncTask<Object, Void, Void> {
+    private class CacheExecuteTask extends AsyncTask<Object, Void, Void> {
         public static final int MESSAGE_CLEAR = 0;
         public static final int MESSAGE_INIT_DISK_CACHE = 1;
         public static final int MESSAGE_FLUSH = 2;
@@ -870,32 +871,32 @@ public class FinalBitmap {
         protected Void doInBackground(Object... params) {
             switch ((Integer) params[0]) {
                 case MESSAGE_CLEAR:
-                    clearCacheInternalInBackgroud();
+                    clearCacheInternalInBackground();
                     break;
                 case MESSAGE_INIT_DISK_CACHE:
-                    initDiskCacheInternalInBackgroud();
+                    initDiskCacheInternalInBackground();
                     break;
                 case MESSAGE_FLUSH:
-                    clearMemoryCacheInBackgroud();
-                    flushCacheInternalInBackgroud();
+                    clearMemoryCacheInBackground();
+                    flushCacheInternalInBackground();
                     break;
                 case MESSAGE_CLOSE:
-                    clearMemoryCacheInBackgroud();
-                    closeCacheInternalInBackgroud();
+                    clearMemoryCacheInBackground();
+                    closeCacheInternalInBackground();
                 case MESSAGE_CLEAR_MEMORY:
-                    clearMemoryCacheInBackgroud();
+                    clearMemoryCacheInBackground();
                     break;
                 case MESSAGE_CLEAR_DISK:
-                    clearDiskCacheInBackgroud();
+                    clearDiskCacheInBackground();
                     break;
                 case MESSAGE_CLEAR_KEY:
-                    clearCacheInBackgroud(String.valueOf(params[1]));
+                    clearCacheInBackground(String.valueOf(params[1]));
                     break;
                 case MESSAGE_CLEAR_KEY_IN_MEMORY:
-                    clearMemoryCacheInBackgroud(String.valueOf(params[1]));
+                    clearMemoryCacheInBackground(String.valueOf(params[1]));
                     break;
                 case MESSAGE_CLEAR_KEY_IN_DISK:
-                    clearDiskCacheInBackgroud(String.valueOf(params[1]));
+                    clearDiskCacheInBackground(String.valueOf(params[1]));
                     break;
             }
             return null;
@@ -956,9 +957,9 @@ public class FinalBitmap {
             // 判断线程和当前的imageview是否是匹配
             final ImageView imageView = getAttachedImageView();
             if (bitmap != null && imageView != null) {
-                mConfig.displayer.loadCompletedisplay(imageView, bitmap, displayConfig);
+                mConfig.displayer.loadCompleteDisplay(imageView, bitmap, displayConfig);
             } else if (bitmap == null && imageView != null) {
-                mConfig.displayer.loadFailDisplay(imageView, displayConfig.getLoadfailBitmap());
+                mConfig.displayer.loadFailedDisplay(imageView, displayConfig.getLoadFailedBitmap());
             }
         }
 

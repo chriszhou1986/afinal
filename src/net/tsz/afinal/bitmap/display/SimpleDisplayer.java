@@ -27,7 +27,7 @@ import net.tsz.afinal.bitmap.core.BitmapDisplayConfig;
 
 public class SimpleDisplayer implements Displayer {
 
-    public void loadCompletedisplay(ImageView imageView, Bitmap bitmap, BitmapDisplayConfig config) {
+    public void loadCompleteDisplay(ImageView imageView, Bitmap bitmap, BitmapDisplayConfig config) {
         switch (config.getAnimationType()) {
             case BitmapDisplayConfig.AnimationType.fadeIn:
                 fadeInDisplay(imageView, bitmap);
@@ -41,7 +41,7 @@ public class SimpleDisplayer implements Displayer {
     }
 
 
-    public void loadFailDisplay(ImageView imageView, Bitmap bitmap) {
+    public void loadFailedDisplay(ImageView imageView, Bitmap bitmap) {
         imageView.setImageBitmap(bitmap);
     }
 

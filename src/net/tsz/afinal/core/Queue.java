@@ -88,7 +88,7 @@ import java.util.Collection;
  * <p/>
  * <p><tt>Queue</tt> implementations generally do not allow insertion
  * of <tt>null</tt> elements, although some implementations, such as
- * {@link LinkedList}, do not prohibit insertion of <tt>null</tt>.
+ * {@link java.util.LinkedList}, do not prohibit insertion of <tt>null</tt>.
  * Even in the implementations that permit it, <tt>null</tt> should
  * not be inserted into a <tt>Queue</tt>, as <tt>null</tt> is also
  * used as a special return value by the <tt>poll</tt> method to
@@ -104,8 +104,8 @@ import java.util.Collection;
  * @param <E> the type of elements held in this collection
  * @author Doug Lea
  * @see java.util.Collection
- * @see LinkedList
- * @see PriorityQueue
+ * @see java.util.LinkedList
+ * @see java.util.PriorityQueue
  * @see java.util.concurrent.LinkedBlockingQueue
  * @see java.util.concurrent.BlockingQueue
  * @see java.util.concurrent.ArrayBlockingQueue
@@ -121,7 +121,7 @@ public interface Queue<E> extends Collection<E> {
      * if no space is currently available.
      *
      * @param e the element to add
-     * @return <tt>true</tt> (as specified by {@link Collection#add})
+     * @return <tt>true</tt> (as specified by {@link java.util.Collection#add})
      * @throws IllegalStateException    if the element cannot be added at this
      *                                  time due to capacity restrictions
      * @throws ClassCastException       if the class of the specified element
@@ -158,7 +158,8 @@ public interface Queue<E> extends Collection<E> {
      * queue is empty.
      *
      * @return the head of this queue
-     * @throws NoSuchElementException if this queue is empty
+     * @throws java.util.NoSuchElementException
+     *          if this queue is empty
      */
     E remove();
 
@@ -176,7 +177,8 @@ public interface Queue<E> extends Collection<E> {
      * if this queue is empty.
      *
      * @return the head of this queue
-     * @throws NoSuchElementException if this queue is empty
+     * @throws java.util.NoSuchElementException
+     *          if this queue is empty
      */
     E element();
 

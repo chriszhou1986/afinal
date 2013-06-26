@@ -28,7 +28,7 @@ public interface Displayer {
      * @param bitmap
      * @param config
      */
-    public void loadCompletedisplay(ImageView imageView, Bitmap bitmap, BitmapDisplayConfig config);
+    public void loadCompleteDisplay(ImageView imageView, Bitmap bitmap, BitmapDisplayConfig config);
 
     /**
      * 图片加载失败回调的函数
@@ -36,6 +36,6 @@ public interface Displayer {
      * @param imageView
      * @param bitmap
      */
-    public void loadFailDisplay(ImageView imageView, Bitmap bitmap);
+    public void loadFailedDisplay(ImageView imageView, Bitmap bitmap);
 
 }

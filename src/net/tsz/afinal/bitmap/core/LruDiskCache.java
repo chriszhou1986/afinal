@@ -50,8 +50,8 @@ import java.util.concurrent.*;
  * to supply data for every value; values default to their previous
  * value.
  * </ul>
- * Every {@link #edit} call must be matched by a call to {@link Editor#commit}
- * or {@link Editor#abort}. Committing is atomic: a read observes the full set
+ * Every {@link #edit} call must be matched by a call to {@link net.tsz.afinal.bitmap.core.LruDiskCache.Editor#commit}
+ * or {@link net.tsz.afinal.bitmap.core.LruDiskCache.Editor#abort}. Committing is atomic: a read observes the full set
  * of values as they were before or after the commit, but never a mix of values.
  * <p/>
  * <p>Clients call {@link #get} to read a snapshot of an entry. The read will
@@ -274,7 +274,7 @@ public final class LruDiskCache implements Closeable {
      * @param appVersion
      * @param valueCount the number of values per cache entry. Must be positive.
      * @param maxSize    the maximum number of bytes this cache should use to store
-     * @throws IOException if reading or writing the cache directory fails
+     * @throws java.io.IOException if reading or writing the cache directory fails
      */
     public static LruDiskCache open(File directory, int appVersion, int valueCount, long maxSize)
             throws IOException {

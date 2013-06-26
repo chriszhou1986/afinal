@@ -25,7 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.protocol.HttpContext;
 
@@ -42,22 +42,22 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
     private final StringEntityHandler mStrEntityHandler = new StringEntityHandler();
     private final FileEntityHandler mFileEntityHandler = new FileEntityHandler();
 
-    private final AjaxCallBack<T> callback;
+    private final AsyncCallBack<T> callback;
 
     private int executionCount = 0;
     private String targetUrl = null; //下载的路径
     private boolean isResume = false; //是否断点续传
     private String charset;
 
-    public HttpHandler(AbstractHttpClient client, HttpContext context, AjaxCallBack<T> callback, String charset) {
+    public HttpHandler(AbstractHttpClient client, HttpContext context, AsyncCallBack<T> callback, String charset) {
         this.client = client;
         this.context = context;
         this.callback = callback;
         this.charset = charset;
     }
 
-
-    private void makeRequestWithRetries(HttpUriRequest request) throws IOException {
+    // 执行请求
+    private void execRequestWithRetries(HttpRequestBase request) throws IOException {
         if (isResume && targetUrl != null) {
             File downloadFile = new File(targetUrl);
             long fileLen = 0;
@@ -96,10 +96,11 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
                 retry = retryHandler.retryRequest(cause, ++executionCount, context);
             }
         }
-        if (cause != null)
+        if (cause != null) {
             throw cause;
-        else
+        } else {
             throw new IOException("未知网络错误");
+        }
     }
 
     @Override
@@ -110,7 +111,7 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
         }
         try {
             publishProgress(UPDATE_START); // 开始
-            makeRequestWithRetries((HttpUriRequest) params[0]);
+            execRequestWithRetries((HttpRequestBase) params[0]);
 
         } catch (IOException e) {
             publishProgress(UPDATE_FAILURE, e, e.getMessage()); // 结束
@@ -157,7 +158,7 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
 
 
     /**
-     * @param stop 停止下载任务
+     * 停止下载任务
      */
     public void stop() {
         mFileEntityHandler.setStop(true);
@@ -176,7 +177,7 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
                 HttpEntity entity = response.getEntity();
                 Object responseBody = null;
                 if (entity != null) {
-                    time = SystemClock.uptimeMillis();
+                    timeStamp = SystemClock.uptimeMillis();
                     if (targetUrl != null) {
                         responseBody = mFileEntityHandler.handleEntity(entity, this, targetUrl, isResume);
                     } else {
@@ -194,7 +195,7 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
     }
 
 
-    private long time;
+    private long timeStamp;
 
     @Override
     public void callBack(long count, long current, boolean mustNoticeUI) {
@@ -203,13 +204,12 @@ public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements
                 publishProgress(UPDATE_LOADING, count, current);
             } else {
                 long thisTime = SystemClock.uptimeMillis();
-                if (thisTime - time >= callback.getRate()) {
-                    time = thisTime;
+                if (thisTime - timeStamp >= callback.getRate()) {
+                    timeStamp = thisTime;
                     publishProgress(UPDATE_LOADING, count, current);
                 }
             }
         }
     }
-
 
 }

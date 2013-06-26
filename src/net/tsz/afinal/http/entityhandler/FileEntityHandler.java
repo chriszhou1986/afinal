@@ -54,19 +54,19 @@ public class FileEntityHandler {
 
 
         long current = 0;
-        FileOutputStream os = null;
+        FileOutputStream fileOutputStream = null;
         if (isResume) {
             current = targetFile.length();
-            os = new FileOutputStream(target, true);
+            fileOutputStream = new FileOutputStream(target, true);
         } else {
-            os = new FileOutputStream(target);
+            fileOutputStream = new FileOutputStream(target);
         }
 
         if (mStop) {
             return targetFile;
         }
 
-        InputStream input = entity.getContent();
+        InputStream inputStream = entity.getContent();
         long count = entity.getContentLength() + current;
 
         if (current >= count || mStop) {
@@ -75,8 +75,8 @@ public class FileEntityHandler {
 
         int readLen = 0;
         byte[] buffer = new byte[1024];
-        while (!mStop && !(current >= count) && ((readLen = input.read(buffer, 0, 1024)) > 0)) {//未全部读取
-            os.write(buffer, 0, readLen);
+        while (!mStop && !(current >= count) && ((readLen = inputStream.read(buffer, 0, 1024)) > 0)) {//未全部读取
+            fileOutputStream.write(buffer, 0, readLen);
             current += readLen;
             callback.callBack(count, current, false);
         }

@@ -35,7 +35,7 @@ public class EventListener implements OnClickListener, OnLongClickListener, OnIt
     private String itemClickMethod;
     private String itemSelectMethod;
     private String nothingSelectedMethod;
-    private String itemLongClickMehtod;
+    private String itemLongClickMethod;
 
     public EventListener(Object handler) {
         this.handler = handler;
@@ -52,7 +52,7 @@ public class EventListener implements OnClickListener, OnLongClickListener, OnIt
     }
 
     public EventListener itemLongClick(String method) {
-        this.itemLongClickMehtod = method;
+        this.itemLongClickMethod = method;
         return this;
     }
 
@@ -76,7 +76,7 @@ public class EventListener implements OnClickListener, OnLongClickListener, OnIt
     }
 
     public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        return invokeItemLongClickMethod(handler, itemLongClickMehtod, arg0, arg1, arg2, arg3);
+        return invokeItemLongClickMethod(handler, itemLongClickMethod, arg0, arg1, arg2, arg3);
     }
 
     public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {

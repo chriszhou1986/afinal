@@ -558,7 +558,7 @@ public class FinalDb {
 
     private void checkTableExist(Class<?> clazz) {
         if (!tableIsExist(TableInfo.get(clazz))) {
-            String sql = SqlBuilder.getCreatTableSQL(clazz);
+            String sql = SqlBuilder.getCreateTableSQL(clazz);
             debugSql(sql);
             db.execSQL(sql);
         }
@@ -566,7 +566,7 @@ public class FinalDb {
 
 
     private boolean tableIsExist(TableInfo table) {
-        if (table.isCheckDatabese())
+        if (table.isCheckDatabase())
             return true;
 
         Cursor cursor = null;
@@ -577,7 +577,7 @@ public class FinalDb {
             if (cursor != null && cursor.moveToNext()) {
                 int count = cursor.getInt(0);
                 if (count > 0) {
-                    table.setCheckDatabese(true);
+                    table.setCheckDatabase(true);
                     return true;
                 }
             }
@@ -596,7 +596,7 @@ public class FinalDb {
 
     private void debugSql(String sql) {
         if (config != null && config.isDebug())
-            android.util.Log.d("Debug SQL", ">>>>>>  " + sql);
+            Log.d("Debug SQL", ">>>>>>  " + sql);
     }
 
 

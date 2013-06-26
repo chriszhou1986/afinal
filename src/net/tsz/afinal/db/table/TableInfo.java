@@ -35,7 +35,7 @@ public class TableInfo {
     public final HashMap<String, OneToMany> oneToManyMap = new HashMap<String, OneToMany>();
     public final HashMap<String, ManyToOne> manyToOneMap = new HashMap<String, ManyToOne>();
 
-    private boolean checkDatabese;//在对实体进行数据库操作的时候查询是否已经有表了，只需查询一遍，用此标示
+    private boolean checkDatabase;//在对实体进行数据库操作的时候查询是否已经有表了，只需查询一遍，用此标示
 
 
     private static final HashMap<String, TableInfo> tableInfoMap = new HashMap<String, TableInfo>();
@@ -138,12 +138,12 @@ public class TableInfo {
         this.id = id;
     }
 
-    public boolean isCheckDatabese() {
-        return checkDatabese;
+    public boolean isCheckDatabase() {
+        return checkDatabase;
     }
 
-    public void setCheckDatabese(boolean checkDatabese) {
-        this.checkDatabese = checkDatabese;
+    public void setCheckDatabase(boolean checkDatabase) {
+        this.checkDatabase = checkDatabase;
     }
 
 

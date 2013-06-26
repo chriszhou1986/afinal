@@ -120,7 +120,7 @@ public class FieldUtils {
      * 获取某个字段的值
      *
      * @param entity
-     * @param fieldName
+     * @param field
      * @return
      */
     public static Object getFieldValue(Object entity, Field field) {
@@ -144,7 +144,8 @@ public class FieldUtils {
      * 设置某个字段的值
      *
      * @param entity
-     * @param fieldName
+     * @param field
+     * @param value
      * @return
      */
     public static void setFieldValue(Object entity, Field field, Object value) {
@@ -176,8 +177,8 @@ public class FieldUtils {
     /**
      * 获取某个字段的值
      *
-     * @param entity
-     * @param fieldName
+     * @param clazz
+     * @param columnName
      * @return
      */
     public static Field getFieldByColumnName(Class<?> clazz, String columnName) {
@@ -216,7 +217,7 @@ public class FieldUtils {
     /**
      * 获取某个字段的值
      *
-     * @param entity
+     * @param clazz
      * @param fieldName
      * @return
      */
@@ -238,8 +239,7 @@ public class FieldUtils {
     /**
      * 获取某个熟悉对应的 表的列
      *
-     * @param entity
-     * @param fieldName
+     * @param field
      * @return
      */
     public static String getColumnByField(Field field) {
@@ -331,7 +331,7 @@ public class FieldUtils {
                 clazz.equals(Short.class) ||
                 clazz.equals(Boolean.class) ||
                 clazz.equals(Date.class) ||
-                clazz.equals(java.util.Date.class) ||
+                clazz.equals(Date.class) ||
                 clazz.equals(java.sql.Date.class) ||
                 clazz.isPrimitive();
     }

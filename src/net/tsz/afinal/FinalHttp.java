@@ -16,55 +16,38 @@
 package net.tsz.afinal;
 
 import net.tsz.afinal.http.*;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.params.ConnPerRouteBean;
-import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.SyncBasicHttpContext;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.GZIPInputStream;
 
 public class FinalHttp {
 
-    private static final int DEFAULT_SOCKET_BUFFER_SIZE = 8 * 1024; //8KB
-    private static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
-    private static final String ENCODING_GZIP = "gzip";
+    private final DefaultHttpClient httpClient = new DefaultHttpClient();
+    private HttpContext httpContext = new BasicHttpContext();
 
-    private static int maxConnections = 10; //http请求最大并发连接数
-    private static int socketTimeout = 10 * 1000; //超时时间，默认10秒
-    private static int maxRetries = 5;//错误尝试次数，错误异常表请在RetryHandler添加
-    private static int httpThreadCount = 3;//http线程池数量
+    private String charset = "UTF-8";
 
-    private final DefaultHttpClient httpClient;
-    private final HttpContext httpContext;
-    private String charset = "utf-8";
-
-    private final Map<String, String> clientHeaderMap;
+    private final Map<String, String> clientHeaderMap = new HashMap<String, String>();
 
     private static final ThreadFactory sThreadFactory = new ThreadFactory() {
         private final AtomicInteger mCount = new AtomicInteger(1);
@@ -75,71 +58,19 @@ public class FinalHttp {
             return tread;
         }
     };
-
+    private static int httpThreadCount = 3;//http线程池数量
     private static final Executor executor = Executors.newFixedThreadPool(httpThreadCount, sThreadFactory);
 
+    private final static int DEFAULT_RETRY_TIMES = 5;
+
     public FinalHttp() {
-        BasicHttpParams httpParams = new BasicHttpParams();
 
-        ConnManagerParams.setTimeout(httpParams, socketTimeout);
-        ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(maxConnections));
-        ConnManagerParams.setMaxTotalConnections(httpParams, 10);
-
-        HttpConnectionParams.setSoTimeout(httpParams, socketTimeout);
-        HttpConnectionParams.setConnectionTimeout(httpParams, socketTimeout);
-        HttpConnectionParams.setTcpNoDelay(httpParams, true);
-        HttpConnectionParams.setSocketBufferSize(httpParams, DEFAULT_SOCKET_BUFFER_SIZE);
-
-        HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
-
-        httpContext = new SyncBasicHttpContext(new BasicHttpContext());
-        httpClient = new DefaultHttpClient(cm, httpParams);
-        httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
-            public void process(HttpRequest request, HttpContext context) {
-                if (!request.containsHeader(HEADER_ACCEPT_ENCODING)) {
-                    request.addHeader(HEADER_ACCEPT_ENCODING, ENCODING_GZIP);
-                }
-                for (String header : clientHeaderMap.keySet()) {
-                    request.addHeader(header, clientHeaderMap.get(header));
-                }
-            }
-        });
-
-        httpClient.addResponseInterceptor(new HttpResponseInterceptor() {
-            public void process(HttpResponse response, HttpContext context) {
-                final HttpEntity entity = response.getEntity();
-                if (entity == null) {
-                    return;
-                }
-                final Header encoding = entity.getContentEncoding();
-                if (encoding != null) {
-                    for (HeaderElement element : encoding.getElements()) {
-                        if (element.getName().equalsIgnoreCase(ENCODING_GZIP)) {
-                            response.setEntity(new InflatingEntity(response.getEntity()));
-                            break;
-                        }
-                    }
-                }
-            }
-        });
-
-        httpClient.setHttpRequestRetryHandler(new RetryHandler(maxRetries));
-
-        clientHeaderMap = new HashMap<String, String>();
+        httpClient.setHttpRequestRetryHandler(new RetryHandler(DEFAULT_RETRY_TIMES));
 
     }
 
     public HttpClient getHttpClient() {
         return this.httpClient;
-    }
-
-    public HttpContext getHttpContext() {
-        return this.httpContext;
     }
 
     public void configCharset(String charSet) {
@@ -200,117 +131,155 @@ public class FinalHttp {
 
 
     //------------------get 请求-----------------------
-    public void get(String url, AjaxCallBack<? extends Object> callBack) {
+    public void get(String url, AsyncCallBack<? extends Object> callBack) {
         get(url, null, callBack);
     }
 
-    public void get(String url, AjaxParams params, AjaxCallBack<? extends Object> callBack) {
-        sendRequest(httpClient, httpContext, new HttpGet(getUrlWithQueryString(url, params)), null, callBack);
+    public void get(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
+        HttpGet getRequest = new HttpGet(getUrlWithQueryString(url, params));
+        sendRequest(getRequest, null, callBack);
     }
 
-    public void get(String url, Header[] headers, AjaxParams params, AjaxCallBack<? extends Object> callBack) {
-        HttpUriRequest request = new HttpGet(getUrlWithQueryString(url, params));
-        if (headers != null) request.setHeaders(headers);
-        sendRequest(httpClient, httpContext, request, null, callBack);
+    public void get(String url, Header[] headers, RequestParams params, AsyncCallBack<? extends Object> callBack) {
+        HttpGet getRequest = new HttpGet(getUrlWithQueryString(url, params));
+        if (headers != null) getRequest.setHeaders(headers);
+        sendRequest(getRequest, null, callBack);
     }
 
     public Object getSync(String url) {
         return getSync(url, null);
     }
 
-    public Object getSync(String url, AjaxParams params) {
-        HttpUriRequest request = new HttpGet(getUrlWithQueryString(url, params));
-        return sendSyncRequest(httpClient, httpContext, request, null);
+    public Object getSync(String url, RequestParams params) {
+        HttpGet getRequest = new HttpGet(getUrlWithQueryString(url, params));
+        return sendSyncRequest(getRequest, null);
     }
 
 
-    public Object getSync(String url, Header[] headers, AjaxParams params) {
-        HttpUriRequest request = new HttpGet(getUrlWithQueryString(url, params));
-        if (headers != null) request.setHeaders(headers);
-        return sendSyncRequest(httpClient, httpContext, request, null);
+    public Object getSync(String url, Header[] headers, RequestParams params) {
+        HttpGet getRequest = new HttpGet(getUrlWithQueryString(url, params));
+        if (headers != null) getRequest.setHeaders(headers);
+        return sendSyncRequest(getRequest, null);
     }
 
 
     //------------------post 请求-----------------------
-    public void post(String url, AjaxCallBack<? extends Object> callBack) {
+    public void post(String url, AsyncCallBack<? extends Object> callBack) {
         post(url, null, callBack);
     }
 
-    public void post(String url, AjaxParams params, AjaxCallBack<? extends Object> callBack) {
+    public void post(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
         post(url, paramsToEntity(params), null, callBack);
     }
 
-    public void post(String url, HttpEntity entity, String contentType, AjaxCallBack<? extends Object> callBack) {
-        sendRequest(httpClient, httpContext, addEntityToRequestBase(new HttpPost(url), entity), contentType, callBack);
+    public void post(String url, RequestParams params, String contentType, AsyncCallBack<? extends Object> callBack) {
+        post(url, paramsToEntity(params), contentType, callBack);
     }
 
-    public <T> void post(String url, Header[] headers, AjaxParams params, String contentType, AjaxCallBack<T> callBack) {
-        HttpEntityEnclosingRequestBase request = new HttpPost(url);
-        if (params != null) request.setEntity(paramsToEntity(params));
-        if (headers != null) request.setHeaders(headers);
-        sendRequest(httpClient, httpContext, request, contentType, callBack);
+    public void post(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+        HttpPost request = new HttpPost(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+
+        sendRequest(request, entity, contentType, callBack);
     }
 
-    public void post(String url, Header[] headers, HttpEntity entity, String contentType, AjaxCallBack<? extends Object> callBack) {
-        HttpEntityEnclosingRequestBase request = addEntityToRequestBase(new HttpPost(url), entity);
-        if (headers != null) request.setHeaders(headers);
-        sendRequest(httpClient, httpContext, request, contentType, callBack);
+    public <T> void post(String url, Header[] headers, RequestParams params, String contentType, AsyncCallBack<T> callBack) {
+        HttpPost request = new HttpPost(url);
+        HttpEntity entity = null;
+        if (params != null) {
+            entity = paramsToEntity(params);
+            request.setEntity(entity);
+        }
+        if (headers != null) {
+            request.setHeaders(headers);
+        }
+
+        sendRequest(request, entity, contentType, callBack);
     }
 
+    public void post(String url, Header[] headers, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+        HttpPost request = new HttpPost(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        if (headers != null) {
+            request.setHeaders(headers);
+        }
+
+        sendRequest(request, entity, contentType, callBack);
+    }
 
     public Object postSync(String url) {
         return postSync(url, null);
     }
 
-    public Object postSync(String url, AjaxParams params) {
+    public Object postSync(String url, RequestParams params) {
         return postSync(url, paramsToEntity(params), null);
     }
 
     public Object postSync(String url, HttpEntity entity, String contentType) {
-        return sendSyncRequest(httpClient, httpContext, addEntityToRequestBase(new HttpPost(url), entity), contentType);
+        HttpPost request = new HttpPost(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        return sendSyncRequest(request, contentType);
     }
 
 
-    public Object postSync(String url, Header[] headers, AjaxParams params, String contentType) {
+    public Object postSync(String url, Header[] headers, RequestParams params, String contentType) {
         HttpEntityEnclosingRequestBase request = new HttpPost(url);
         if (params != null) request.setEntity(paramsToEntity(params));
         if (headers != null) request.setHeaders(headers);
-        return sendSyncRequest(httpClient, httpContext, request, contentType);
+        return sendSyncRequest(request, contentType);
     }
 
     public Object postSync(String url, Header[] headers, HttpEntity entity, String contentType) {
-        HttpEntityEnclosingRequestBase request = addEntityToRequestBase(new HttpPost(url), entity);
-        if (headers != null) request.setHeaders(headers);
-        return sendSyncRequest(httpClient, httpContext, request, contentType);
+        HttpPost request = new HttpPost(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        if (headers != null) {
+            request.setHeaders(headers);
+        }
+        return sendSyncRequest(request, contentType);
     }
 
 
     //------------------put 请求-----------------------
-
-    public void put(String url, AjaxCallBack<? extends Object> callBack) {
+    public void put(String url, AsyncCallBack<? extends Object> callBack) {
         put(url, null, callBack);
     }
 
-
-    public void put(String url, AjaxParams params, AjaxCallBack<? extends Object> callBack) {
+    public void put(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
         put(url, paramsToEntity(params), null, callBack);
     }
 
-    public void put(String url, HttpEntity entity, String contentType, AjaxCallBack<? extends Object> callBack) {
-        sendRequest(httpClient, httpContext, addEntityToRequestBase(new HttpPut(url), entity), contentType, callBack);
+    public void put(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+        HttpPut request = new HttpPut(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        sendRequest(request, contentType, callBack);
     }
 
-    public void put(String url, Header[] headers, HttpEntity entity, String contentType, AjaxCallBack<? extends Object> callBack) {
-        HttpEntityEnclosingRequestBase request = addEntityToRequestBase(new HttpPut(url), entity);
-        if (headers != null) request.setHeaders(headers);
-        sendRequest(httpClient, httpContext, request, contentType, callBack);
+    public void put(String url, Header[] headers, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+        HttpPut request = new HttpPut(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        if (headers != null) {
+            request.setHeaders(headers);
+        }
+        sendRequest(request, contentType, callBack);
     }
 
     public Object putSync(String url) {
         return putSync(url, null);
     }
 
-    public Object putSync(String url, AjaxParams params) {
+    public Object putSync(String url, RequestParams params) {
         return putSync(url, paramsToEntity(params), null);
     }
 
@@ -320,21 +289,25 @@ public class FinalHttp {
 
 
     public Object putSync(String url, Header[] headers, HttpEntity entity, String contentType) {
-        HttpEntityEnclosingRequestBase request = addEntityToRequestBase(new HttpPut(url), entity);
+        HttpPut request = new HttpPut(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
         if (headers != null) request.setHeaders(headers);
-        return sendSyncRequest(httpClient, httpContext, request, contentType);
+        return sendSyncRequest(request, contentType);
     }
+
 
     //------------------delete 请求-----------------------
-    public void delete(String url, AjaxCallBack<? extends Object> callBack) {
+    public void delete(String url, AsyncCallBack<? extends Object> callBack) {
         final HttpDelete delete = new HttpDelete(url);
-        sendRequest(httpClient, httpContext, delete, null, callBack);
+        sendRequest(delete, null, callBack);
     }
 
-    public void delete(String url, Header[] headers, AjaxCallBack<? extends Object> callBack) {
+    public void delete(String url, Header[] headers, AsyncCallBack<? extends Object> callBack) {
         final HttpDelete delete = new HttpDelete(url);
         if (headers != null) delete.setHeaders(headers);
-        sendRequest(httpClient, httpContext, delete, null, callBack);
+        sendRequest(delete, null, callBack);
     }
 
     public Object deleteSync(String url) {
@@ -344,24 +317,25 @@ public class FinalHttp {
     public Object deleteSync(String url, Header[] headers) {
         final HttpDelete delete = new HttpDelete(url);
         if (headers != null) delete.setHeaders(headers);
-        return sendSyncRequest(httpClient, httpContext, delete, null);
+        return sendSyncRequest(delete, null);
     }
 
+
     //---------------------下载---------------------------------------
-    public HttpHandler<File> download(String url, String target, AjaxCallBack<File> callback) {
+    public HttpHandler<File> download(String url, String target, AsyncCallBack<File> callback) {
         return download(url, null, target, false, callback);
     }
 
 
-    public HttpHandler<File> download(String url, String target, boolean isResume, AjaxCallBack<File> callback) {
+    public HttpHandler<File> download(String url, String target, boolean isResume, AsyncCallBack<File> callback) {
         return download(url, null, target, isResume, callback);
     }
 
-    public HttpHandler<File> download(String url, AjaxParams params, String target, AjaxCallBack<File> callback) {
+    public HttpHandler<File> download(String url, RequestParams params, String target, AsyncCallBack<File> callback) {
         return download(url, params, target, false, callback);
     }
 
-    public HttpHandler<File> download(String url, AjaxParams params, String target, boolean isResume, AjaxCallBack<File> callback) {
+    public HttpHandler<File> download(String url, RequestParams params, String target, boolean isResume, AsyncCallBack<File> callback) {
         final HttpGet get = new HttpGet(getUrlWithQueryString(url, params));
         HttpHandler<File> handler = new HttpHandler<File>(httpClient, httpContext, callback, charset);
         handler.executeOnExecutor(executor, get, target, isResume);
@@ -369,24 +343,38 @@ public class FinalHttp {
     }
 
 
-    protected <T> void sendRequest(DefaultHttpClient client, HttpContext httpContext, HttpUriRequest uriRequest, String contentType, AjaxCallBack<T> ajaxCallBack) {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    private <T> void sendRequest(HttpRequestBase request, HttpEntity entity, String contentType, AsyncCallBack<T> callBack) {
         if (contentType != null) {
-            uriRequest.addHeader("Content-Type", contentType);
+            request.addHeader("Content-Type", contentType);
         }
 
-        new HttpHandler<T>(client, httpContext, ajaxCallBack, charset)
-                .executeOnExecutor(executor, uriRequest);
-
-    }
-
-    protected Object sendSyncRequest(DefaultHttpClient client, HttpContext httpContext, HttpUriRequest uriRequest, String contentType) {
-        if (contentType != null) {
-            uriRequest.addHeader("Content-Type", contentType);
+        HttpHandler handler = new HttpHandler(httpClient, httpContext, callBack, charset);
+        if (entity instanceof MultipartEntity) {
+            ((MultipartEntity) entity).callBackInfo.callback = handler;
+        } else if (entity instanceof UploadFileEntity) {
+            ((UploadFileEntity) entity).callback = handler;
         }
-        return new SyncRequestHandler(client, httpContext, charset).sendRequest(uriRequest);
+
+        handler.executeOnExecutor(executor, request);
     }
 
-    public static String getUrlWithQueryString(String url, AjaxParams params) {
+    protected <T> void sendRequest(HttpRequestBase request, String contentType, AsyncCallBack<T> callBack) {
+        if (contentType != null) {
+            request.addHeader("Content-Type", contentType);
+        }
+
+        new HttpHandler<T>(httpClient, httpContext, callBack, charset).executeOnExecutor(executor, request);
+    }
+
+    protected Object sendSyncRequest(HttpRequestBase request, String contentType) {
+        if (contentType != null) {
+            request.addHeader("Content-Type", contentType);
+        }
+        return new SyncRequestHandler(httpClient, httpContext, charset).sendRequest(request);
+    }
+
+    public static String getUrlWithQueryString(String url, RequestParams params) {
         if (params != null) {
             String paramString = params.getParamString();
             url += "?" + paramString;
@@ -394,7 +382,7 @@ public class FinalHttp {
         return url;
     }
 
-    private HttpEntity paramsToEntity(AjaxParams params) {
+    private HttpEntity paramsToEntity(RequestParams params) {
         HttpEntity entity = null;
 
         if (params != null) {
@@ -402,29 +390,5 @@ public class FinalHttp {
         }
 
         return entity;
-    }
-
-    private HttpEntityEnclosingRequestBase addEntityToRequestBase(HttpEntityEnclosingRequestBase requestBase, HttpEntity entity) {
-        if (entity != null) {
-            requestBase.setEntity(entity);
-        }
-
-        return requestBase;
-    }
-
-    private static class InflatingEntity extends HttpEntityWrapper {
-        public InflatingEntity(HttpEntity wrapped) {
-            super(wrapped);
-        }
-
-        @Override
-        public InputStream getContent() throws IOException {
-            return new GZIPInputStream(wrappedEntity.getContent());
-        }
-
-        @Override
-        public long getContentLength() {
-            return -1;
-        }
     }
 }

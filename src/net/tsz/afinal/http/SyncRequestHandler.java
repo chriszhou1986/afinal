@@ -18,7 +18,7 @@ package net.tsz.afinal.http;
 import net.tsz.afinal.http.entityhandler.StringEntityHandler;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.protocol.HttpContext;
 
@@ -40,7 +40,7 @@ public class SyncRequestHandler {
         this.charset = charset;
     }
 
-    private Object makeRequestWithRetries(HttpUriRequest request) throws IOException {
+    private Object makeRequestWithRetries(HttpRequestBase request) throws IOException {
 
         boolean retry = true;
         IOException cause = null;
@@ -72,7 +72,7 @@ public class SyncRequestHandler {
 
     }
 
-    public Object sendRequest(HttpUriRequest... params) {
+    public Object sendRequest(HttpRequestBase... params) {
         try {
             return makeRequestWithRetries(params[0]);
         } catch (IOException e) {
@@ -80,6 +80,5 @@ public class SyncRequestHandler {
         }
         return null;
     }
-
 
 }

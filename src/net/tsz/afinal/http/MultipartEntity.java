@@ -1,177 +1,205 @@
-/**
- * Copyright (c) 2012-2013, Michael Yang 杨福海 (www.yangfuhai.com).
+/*
+ * ====================================================================
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ * ====================================================================
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ *
  */
+
 package net.tsz.afinal.http;
 
+import net.tsz.afinal.http.content.ContentBody;
+import net.tsz.afinal.http.entityhandler.EntityCallBack;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HTTP;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Random;
 
 /**
- * 参考 http://blog.rafaelsanches.com/2011/01/29/upload-using-multipart-post-
- * using-httpclient-in-android/  拿来主义...   :)
+ * Multipart/form coded HTTP entity consisting of multiple body parts.
  *
- * @author michael yang （www.yangfuhai.com）
+ * @since 4.0
  */
-class MultipartEntity implements HttpEntity {
+public class MultipartEntity implements HttpEntity {
 
-    private final static char[] MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    public CallBackInfo callBackInfo = new CallBackInfo();
 
-    private String boundary = null;
+    // wyouflf add： upload callback
+    public static class CallBackInfo {
+        public final static CallBackInfo DEFAULT = new CallBackInfo();
+        public EntityCallBack callback = null;
+        public long totalLength = 0;
+        public long pos = 0;
 
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    boolean isSetLast = false;
-    boolean isSetFirst = false;
+        public void doCallBack(boolean mustNoticeUI) {
+            if (callback != null) {
+                callback.callBack(totalLength, pos, mustNoticeUI);
+            }
+        }
+    }
 
+    /**
+     * The pool of ASCII chars to be used for generating a multipart boundary.
+     */
+    private final static char[] MULTIPART_CHARS =
+            "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    .toCharArray();
+
+    private final HttpMultipart multipart;
+    private final Header contentType;
+
+    // @GuardedBy("dirty") // we always read dirty before accessing length
+    private long length;
+    private volatile boolean dirty; // used to decide whether to recalculate length
+
+    /**
+     * Creates an instance using the specified parameters
+     *
+     * @param mode     the mode to use, may be {@code null}, in which case {@link HttpMultipartMode#BROWSER_COMPATIBLE} is used
+     * @param boundary the boundary string, may be {@code null}, in which case {@link #generateBoundary()} is invoked to create the string
+     * @param charset  the character set to use, may be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
+     */
+    public MultipartEntity(
+            HttpMultipartMode mode,
+            String boundary,
+            Charset charset) {
+        super();
+        if (boundary == null) {
+            boundary = generateBoundary();
+        }
+        if (mode == null) {
+            mode = HttpMultipartMode.BROWSER_COMPATIBLE;
+        }
+        this.multipart = new HttpMultipart("form-data", charset, boundary, mode);
+        this.contentType = new BasicHeader(
+                HTTP.CONTENT_TYPE,
+                generateContentType(boundary, charset));
+        this.dirty = true;
+    }
+
+    /**
+     * Creates an instance using the specified {@link HttpMultipartMode} mode.
+     * Boundary and charset are set to {@code null}.
+     *
+     * @param mode the desired mode
+     */
+    public MultipartEntity(final HttpMultipartMode mode) {
+        this(mode, null, null);
+    }
+
+    /**
+     * Creates an instance using mode {@link HttpMultipartMode#BROWSER_COMPATIBLE}
+     */
     public MultipartEntity() {
-        final StringBuffer buf = new StringBuffer();
-        final Random rand = new Random();
-        for (int i = 0; i < 30; i++) {
-            buf.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
+        this(HttpMultipartMode.BROWSER_COMPATIBLE, null, null);
+    }
+
+    protected String generateContentType(
+            final String boundary,
+            final Charset charset) {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("multipart/form-data; boundary=");
+        buffer.append(boundary);
+        if (charset != null) {
+            buffer.append("; charset=");
+            buffer.append(charset.name());
         }
-        this.boundary = buf.toString();
-
+        return buffer.toString();
     }
 
-    public void writeFirstBoundaryIfNeeds() {
-        if (!isSetFirst) {
-            try {
-                out.write(("--" + boundary + "\r\n").getBytes());
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
+    protected String generateBoundary() {
+        StringBuilder buffer = new StringBuilder();
+        Random rand = new Random();
+        int count = rand.nextInt(11) + 30; // a random size from 30 to 40
+        for (int i = 0; i < count; i++) {
+            buffer.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
         }
-
-        isSetFirst = true;
+        return buffer.toString();
     }
 
-    public void writeLastBoundaryIfNeeds() {
-        if (isSetLast) {
-            return;
-        }
-
-        try {
-            out.write(("\r\n--" + boundary + "--\r\n").getBytes());
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
-
-        isSetLast = true;
+    public void addPart(final FormBodyPart bodyPart) {
+        this.multipart.addBodyPart(bodyPart);
+        this.dirty = true;
     }
 
-    public void addPart(final String key, final String value) {
-        writeFirstBoundaryIfNeeds();
-        try {
-            out.write(("Content-Disposition: form-data; name=\"" + key + "\"\r\n\r\n").getBytes());
-            out.write(value.getBytes());
-            out.write(("\r\n--" + boundary + "\r\n").getBytes());
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
+    public void addPart(final String name, final ContentBody contentBody) {
+        addPart(new FormBodyPart(name, contentBody));
     }
 
-    public void addPart(final String key, final String fileName, final InputStream fin, final boolean isLast) {
-        addPart(key, fileName, fin, "application/octet-stream", isLast);
-    }
-
-    public void addPart(final String key, final String fileName, final InputStream fin, String type, final boolean isLast) {
-        writeFirstBoundaryIfNeeds();
-        try {
-            type = "Content-Type: " + type + "\r\n";
-            out.write(("Content-Disposition: form-data; name=\"" + key + "\"; filename=\"" + fileName + "\"\r\n").getBytes());
-            out.write(type.getBytes());
-            out.write("Content-Transfer-Encoding: binary\r\n\r\n".getBytes());
-
-            final byte[] tmp = new byte[4096];
-            int l = 0;
-            while ((l = fin.read(tmp)) != -1) {
-                out.write(tmp, 0, l);
-            }
-            if (!isLast)
-                out.write(("\r\n--" + boundary + "\r\n").getBytes());
-            out.flush();
-        } catch (final IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fin.close();
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void addPart(final String key, final File value, final boolean isLast) {
-        try {
-            addPart(key, value.getName(), new FileInputStream(value), isLast);
-        } catch (final FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public long getContentLength() {
-        writeLastBoundaryIfNeeds();
-        return out.toByteArray().length;
-    }
-
-    @Override
-    public Header getContentType() {
-        return new BasicHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
-    }
-
-    @Override
-    public boolean isChunked() {
-        return false;
-    }
-
-    @Override
     public boolean isRepeatable() {
-        return false;
+        for (FormBodyPart part : this.multipart.getBodyParts()) {
+            ContentBody body = part.getBody();
+            if (body.getContentLength() < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    @Override
+    public boolean isChunked() {
+        return !isRepeatable();
+    }
+
     public boolean isStreaming() {
-        return false;
+        return !isRepeatable();
     }
 
-    @Override
-    public void writeTo(final OutputStream outstream) throws IOException {
-        outstream.write(out.toByteArray());
+    public long getContentLength() {
+        if (this.dirty) {
+            this.length = this.multipart.getTotalLength();
+            this.dirty = false;
+        }
+        return this.length;
     }
 
-    @Override
+    public Header getContentType() {
+        return this.contentType;
+    }
+
     public Header getContentEncoding() {
         return null;
     }
 
-    @Override
-    public void consumeContent() throws IOException,
-            UnsupportedOperationException {
+    public void consumeContent()
+            throws IOException, UnsupportedOperationException {
         if (isStreaming()) {
             throw new UnsupportedOperationException(
                     "Streaming entity does not implement #consumeContent()");
         }
     }
 
-    @Override
-    public InputStream getContent() throws IOException,
-            UnsupportedOperationException {
-        return new ByteArrayInputStream(out.toByteArray());
+    public InputStream getContent() throws IOException, UnsupportedOperationException {
+        throw new UnsupportedOperationException(
+                "Multipart form entity does not implement #getContent()");
+    }
+
+    public void writeTo(final OutputStream outStream) throws IOException {
+        callBackInfo.totalLength = getContentLength();
+        this.multipart.writeTo(outStream, callBackInfo);
     }
 }

@@ -28,7 +28,7 @@ public class SqlBuilder {
     /**
      * 获取插入的sql语句
      *
-     * @param tableInfo
+     * @param entity
      * @return
      */
     public static SqlInfo buildInsertSql(Object entity) {
@@ -69,18 +69,18 @@ public class SqlBuilder {
         List<KeyValue> keyValueList = new ArrayList<KeyValue>();
 
         TableInfo table = TableInfo.get(entity.getClass());
-        Object idvalue = table.getId().getValue(entity);
+        Object idValue = table.getId().getValue(entity);
 
-        if (!(idvalue instanceof Integer)) { //用了非自增长,添加id , 采用自增长就不需要添加id了
-            if (idvalue instanceof String && idvalue != null) {
-                KeyValue kv = new KeyValue(table.getId().getColumn(), idvalue);
+        if (!(idValue instanceof Integer)) { //用了非自增长,添加id , 采用自增长就不需要添加id了
+            if (idValue instanceof String && idValue != null) {
+                KeyValue kv = new KeyValue(table.getId().getColumn(), idValue);
                 keyValueList.add(kv);
             }
         }
 
         //添加属性
-        Collection<Property> propertys = table.propertyMap.values();
-        for (Property property : propertys) {
+        Collection<Property> properties = table.propertyMap.values();
+        for (Property property : properties) {
             KeyValue kv = property2KeyValue(property, entity);
             if (kv != null)
                 keyValueList.add(kv);
@@ -97,7 +97,7 @@ public class SqlBuilder {
     }
 
 
-    private static String getDeleteSqlBytableName(String tableName) {
+    private static String getDeleteSqlByTableName(String tableName) {
         return "DELETE FROM " + tableName;
     }
 
@@ -111,7 +111,7 @@ public class SqlBuilder {
         if (idvalue == null) {
             throw new DbException("getDeleteSQL:" + entity.getClass() + " id value is null");
         }
-        StringBuffer strSQL = new StringBuffer(getDeleteSqlBytableName(table.getTableName()));
+        StringBuffer strSQL = new StringBuffer(getDeleteSqlByTableName(table.getTableName()));
         strSQL.append(" WHERE ").append(id.getColumn()).append("=?");
 
         SqlInfo sqlInfo = new SqlInfo();
@@ -130,7 +130,7 @@ public class SqlBuilder {
             throw new DbException("getDeleteSQL:idValue is null");
         }
 
-        StringBuffer strSQL = new StringBuffer(getDeleteSqlBytableName(table.getTableName()));
+        StringBuffer strSQL = new StringBuffer(getDeleteSqlByTableName(table.getTableName()));
         strSQL.append(" WHERE ").append(id.getColumn()).append("=?");
 
         SqlInfo sqlInfo = new SqlInfo();
@@ -149,7 +149,7 @@ public class SqlBuilder {
      */
     public static String buildDeleteSql(Class<?> clazz, String strWhere) {
         TableInfo table = TableInfo.get(clazz);
-        StringBuffer strSQL = new StringBuffer(getDeleteSqlBytableName(table.getTableName()));
+        StringBuffer strSQL = new StringBuffer(getDeleteSqlByTableName(table.getTableName()));
 
         if (!TextUtils.isEmpty(strWhere)) {
             strSQL.append(" WHERE ");
@@ -213,16 +213,16 @@ public class SqlBuilder {
     public static SqlInfo getUpdateSqlAsSqlInfo(Object entity) {
 
         TableInfo table = TableInfo.get(entity.getClass());
-        Object idvalue = table.getId().getValue(entity);
+        Object idValue = table.getId().getValue(entity);
 
-        if (null == idvalue) {//主键值不能为null，否则不能更新
+        if (null == idValue) {//主键值不能为null，否则不能更新
             throw new DbException("this entity[" + entity.getClass() + "]'s id value is null");
         }
 
         List<KeyValue> keyValueList = new ArrayList<KeyValue>();
         //添加属性
-        Collection<Property> propertys = table.propertyMap.values();
-        for (Property property : propertys) {
+        Collection<Property> properties = table.propertyMap.values();
+        for (Property property : properties) {
             KeyValue kv = property2KeyValue(property, entity);
             if (kv != null)
                 keyValueList.add(kv);
@@ -247,7 +247,7 @@ public class SqlBuilder {
         }
         strSQL.deleteCharAt(strSQL.length() - 1);
         strSQL.append(" WHERE ").append(table.getId().getColumn()).append("=?");
-        sqlInfo.addValue(idvalue);
+        sqlInfo.addValue(idValue);
         sqlInfo.setSql(strSQL.toString());
         return sqlInfo;
     }
@@ -260,8 +260,8 @@ public class SqlBuilder {
         List<KeyValue> keyValueList = new ArrayList<KeyValue>();
 
         //添加属性
-        Collection<Property> propertys = table.propertyMap.values();
-        for (Property property : propertys) {
+        Collection<Property> properties = table.propertyMap.values();
+        for (Property property : properties) {
             KeyValue kv = property2KeyValue(property, entity);
             if (kv != null) keyValueList.add(kv);
         }
@@ -294,7 +294,7 @@ public class SqlBuilder {
     }
 
 
-    public static String getCreatTableSQL(Class<?> clazz) {
+    public static String getCreateTableSQL(Class<?> clazz) {
         TableInfo table = TableInfo.get(clazz);
 
         Id id = table.getId();
@@ -309,8 +309,8 @@ public class SqlBuilder {
         else
             strSQL.append("\"").append(id.getColumn()).append("\"    ").append("TEXT PRIMARY KEY,");
 
-        Collection<Property> propertys = table.propertyMap.values();
-        for (Property property : propertys) {
+        Collection<Property> properties = table.propertyMap.values();
+        for (Property property : properties) {
             strSQL.append("\"").append(property.getColumn());
             strSQL.append("\",");
         }

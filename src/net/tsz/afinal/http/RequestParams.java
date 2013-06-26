@@ -15,12 +15,19 @@
  */
 package net.tsz.afinal.http;
 
+import net.tsz.afinal.http.content.ContentBody;
+import net.tsz.afinal.http.content.FileBody;
+import net.tsz.afinal.http.content.InputStreamBody;
+import net.tsz.afinal.http.content.StringBody;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 使用方法:
  * <p/>
  * <pre>
- * AjaxParams params = new AjaxParams();
+ * RequestParams params = new RequestParams();
  * params.put("username", "michael");
  * params.put("password", "123456");
  * params.put("email", "test@tsz.net");
@@ -40,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * params.put("profile_picture3", new ByteArrayInputStream(bytes)); // 提交字节流
  *
  * FinalHttp fh = new FinalHttp();
- * fh.post("http://www.yangfuhai.com", params, new AjaxCallBack<String>(){
+ * fh.post("http://www.yangfuhai.com", params, new AsyncCallBack<String>(){
  *        @Override
  * 		public void onLoading(long count, long current) {
  * 				textView.setText(current+"/"+count);
@@ -53,34 +60,30 @@ import java.util.concurrent.ConcurrentHashMap;
  * });
  * </pre>
  */
-public class AjaxParams {
+public class RequestParams {
     private static String ENCODING = "UTF-8";
 
-    protected ConcurrentHashMap<String, String> urlParams;
-    protected ConcurrentHashMap<String, FileWrapper> fileParams;
+    protected ConcurrentHashMap<String, String> urlParams = new ConcurrentHashMap<String, String>();
+    protected ConcurrentHashMap<String, ContentBody> fileParams = new ConcurrentHashMap<String, ContentBody>();
 
-    public AjaxParams() {
-        init();
+    public RequestParams() {
     }
 
-    public AjaxParams(Map<String, String> source) {
-        init();
-
+    public RequestParams(Map<String, String> source) {
         for (Map.Entry<String, String> entry : source.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
 
-    public AjaxParams(String key, String value) {
-        init();
+    public RequestParams(String key, String value) {
         put(key, value);
     }
 
-    public AjaxParams(Object... keysAndValues) {
-        init();
+    public RequestParams(Object... keysAndValues) {
         int len = keysAndValues.length;
-        if (len % 2 != 0)
+        if (len % 2 != 0) {
             throw new IllegalArgumentException("Supplied arguments must be even");
+        }
         for (int i = 0; i < len; i += 2) {
             String key = String.valueOf(keysAndValues[i]);
             String val = String.valueOf(keysAndValues[i + 1]);
@@ -95,29 +98,23 @@ public class AjaxParams {
     }
 
     public void put(String key, File file) throws FileNotFoundException {
-        put(key, new FileInputStream(file), file.getName());
+        fileParams.put(key, new FileBody(file));
     }
 
-    public void put(String key, InputStream stream) {
-        put(key, stream, null);
+    public void put(String key, File file, String mimeType) throws FileNotFoundException {
+        fileParams.put(key, new FileBody(file, mimeType));
+    }
+
+    public void put(String key, File file, String mimeType, String charset) throws FileNotFoundException {
+        fileParams.put(key, new FileBody(file, mimeType, charset));
     }
 
     public void put(String key, InputStream stream, String fileName) {
-        put(key, stream, fileName, null);
+        fileParams.put(key, new InputStreamBody(stream, fileName));
     }
 
-    /**
-     * 添加 inputStream 到请求中.
-     *
-     * @param key         the key name for the new param.
-     * @param stream      the input stream to add.
-     * @param fileName    the name of the file.
-     * @param contentType the content type of the file, eg. application/json
-     */
-    public void put(String key, InputStream stream, String fileName, String contentType) {
-        if (key != null && stream != null) {
-            fileParams.put(key, new FileWrapper(stream, fileName, contentType));
-        }
+    public void put(String key, InputStream stream, String mimeType, String fileName) {
+        fileParams.put(key, new InputStreamBody(stream, mimeType, fileName));
     }
 
     public void remove(String key) {
@@ -137,7 +134,7 @@ public class AjaxParams {
             result.append(entry.getValue());
         }
 
-        for (ConcurrentHashMap.Entry<String, FileWrapper> entry : fileParams.entrySet()) {
+        for (ConcurrentHashMap.Entry<String, ContentBody> entry : fileParams.entrySet()) {
             if (result.length() > 0)
                 result.append("&");
 
@@ -156,27 +153,31 @@ public class AjaxParams {
         HttpEntity entity = null;
 
         if (!fileParams.isEmpty()) {
-            MultipartEntity multipartEntity = new MultipartEntity();
 
-            // Add string params
-            for (ConcurrentHashMap.Entry<String, String> entry : urlParams.entrySet()) {
-                multipartEntity.addPart(entry.getKey(), entry.getValue());
-            }
-
-            // Add file params
-            int currentIndex = 0;
-            int lastIndex = fileParams.entrySet().size() - 1;
-            for (ConcurrentHashMap.Entry<String, FileWrapper> entry : fileParams.entrySet()) {
-                FileWrapper file = entry.getValue();
-                if (file.inputStream != null) {
-                    boolean isLast = currentIndex == lastIndex;
-                    if (file.contentType != null) {
-                        multipartEntity.addPart(entry.getKey(), file.getFileName(), file.inputStream, file.contentType, isLast);
-                    } else {
-                        multipartEntity.addPart(entry.getKey(), file.getFileName(), file.inputStream, isLast);
+            if (fileParams.size() == 1 && (urlParams == null || urlParams.size() == 0)) {
+                for (ConcurrentHashMap.Entry<String, ContentBody> entry : fileParams.entrySet()) {
+                    ContentBody body = entry.getValue();
+                    if (body instanceof FileBody) {
+                        FileBody fileBody = (FileBody) body;
+                        UploadFileEntity fileEntity = new UploadFileEntity(fileBody.getFile(), fileBody.getMimeType());
+                        return fileEntity;
                     }
                 }
-                currentIndex++;
+            }
+
+            MultipartEntity multipartEntity = new MultipartEntity();
+
+            for (ConcurrentHashMap.Entry<String, String> entry : urlParams.entrySet()) {
+                try {
+                    multipartEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            for (ConcurrentHashMap.Entry<String, ContentBody> entry : fileParams.entrySet()) {
+                ContentBody file = entry.getValue();
+                multipartEntity.addPart(entry.getKey(), entry.getValue());
             }
 
             entity = multipartEntity;
@@ -191,11 +192,6 @@ public class AjaxParams {
         return entity;
     }
 
-    private void init() {
-        urlParams = new ConcurrentHashMap<String, String>();
-        fileParams = new ConcurrentHashMap<String, FileWrapper>();
-    }
-
     protected List<BasicNameValuePair> getParamsList() {
         List<BasicNameValuePair> lparams = new LinkedList<BasicNameValuePair>();
 
@@ -208,25 +204,5 @@ public class AjaxParams {
 
     public String getParamString() {
         return URLEncodedUtils.format(getParamsList(), ENCODING);
-    }
-
-    private static class FileWrapper {
-        public InputStream inputStream;
-        public String fileName;
-        public String contentType;
-
-        public FileWrapper(InputStream inputStream, String fileName, String contentType) {
-            this.inputStream = inputStream;
-            this.fileName = fileName;
-            this.contentType = contentType;
-        }
-
-        public String getFileName() {
-            if (fileName != null) {
-                return fileName;
-            } else {
-                return "nofilename";
-            }
-        }
     }
 }

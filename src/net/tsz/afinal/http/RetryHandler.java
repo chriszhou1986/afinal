@@ -18,7 +18,7 @@ package net.tsz.afinal.http;
 import android.os.SystemClock;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
@@ -73,7 +73,7 @@ public class RetryHandler implements HttpRequestRetryHandler {
         }
 
         if (retry) {
-            HttpUriRequest currentReq = (HttpUriRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
+            HttpRequestBase currentReq = (HttpRequestBase) context.getAttribute(ExecutionContext.HTTP_REQUEST);
             retry = currentReq != null && !"POST".equals(currentReq.getMethod());
         }
 
