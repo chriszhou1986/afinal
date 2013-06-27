@@ -41,6 +41,9 @@ public class UploadFileEntity extends FileEntity {
                 }
             }
             outStream.flush();
+            if (callback != null) {
+                callback.callBack(uploadedSize, fileSize, true);
+            }
         } finally {
             inStream.close();
         }
