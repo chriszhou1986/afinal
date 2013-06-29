@@ -154,17 +154,6 @@ public class RequestParams {
 
         if (!fileParams.isEmpty()) {
 
-            /*if (fileParams.size() == 1 && (urlParams == null || urlParams.size() == 0)) {
-                for (ConcurrentHashMap.Entry<String, ContentBody> entry : fileParams.entrySet()) {
-                    ContentBody body = entry.getValue();
-                    if (body instanceof FileBody) {
-                        FileBody fileBody = (FileBody) body;
-                        UploadFileEntity fileEntity = new UploadFileEntity(fileBody.getFile(), fileBody.getMimeType());
-                        return fileEntity;
-                    }
-                }
-            }*/
-
             MultipartEntity multipartEntity = new MultipartEntity();
 
             for (ConcurrentHashMap.Entry<String, String> entry : urlParams.entrySet()) {
@@ -193,13 +182,13 @@ public class RequestParams {
     }
 
     protected List<BasicNameValuePair> getParamsList() {
-        List<BasicNameValuePair> lparams = new LinkedList<BasicNameValuePair>();
+        List<BasicNameValuePair> nameValuePairs = new LinkedList<BasicNameValuePair>();
 
         for (ConcurrentHashMap.Entry<String, String> entry : urlParams.entrySet()) {
-            lparams.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+            nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
         }
 
-        return lparams;
+        return nameValuePairs;
     }
 
     public String getParamString() {
