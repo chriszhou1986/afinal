@@ -70,12 +70,11 @@ public class BitmapCommonUtils {
      * @param path
      * @return
      */
-    public static long getUsableSpace(File path) {
+    public static long getAvailableSpace(File path) {
         try {
             final StatFs stats = new StatFs(path.getPath());
             return (long) stats.getBlockSize() * (long) stats.getAvailableBlocks();
         } catch (Exception e) {
-            Log.e(TAG, "获取 sdcard 缓存大小 出错，请查看AndroidManifest.xml 是否添加了sdcard的访问权限");
             e.printStackTrace();
             return -1;
         }

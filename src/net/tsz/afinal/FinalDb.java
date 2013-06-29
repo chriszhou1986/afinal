@@ -261,7 +261,7 @@ public class FinalDb {
     private void exeSqlInfo(SqlInfo sqlInfo) {
         if (sqlInfo != null) {
             debugSql(sqlInfo.getSql());
-            db.execSQL(sqlInfo.getSql(), sqlInfo.getBindArgsAsArray());
+            db.execSQL(sqlInfo.getSql(), sqlInfo.getBindingArgsAsArray());
         } else {
             Log.e(TAG, "sava error:sqlInfo is null");
         }
@@ -278,7 +278,7 @@ public class FinalDb {
         SqlInfo sqlInfo = SqlBuilder.getSelectSqlAsSqlInfo(clazz, id);
         if (sqlInfo != null) {
             debugSql(sqlInfo.getSql());
-            Cursor cursor = db.rawQuery(sqlInfo.getSql(), sqlInfo.getBindArgsAsStringArray());
+            Cursor cursor = db.rawQuery(sqlInfo.getSql(), sqlInfo.getBindingArgsAsStringArray());
             try {
                 if (cursor.moveToNext()) {
                     return CursorUtils.getEntity(cursor, clazz);

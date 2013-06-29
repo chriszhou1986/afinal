@@ -5,7 +5,7 @@ import java.util.LinkedList;
 public class SqlInfo {
 
     private String sql;
-    private LinkedList<Object> bindArgs;
+    private LinkedList<Object> bindingArgs;
 
     public String getSql() {
         return sql;
@@ -15,25 +15,25 @@ public class SqlInfo {
         this.sql = sql;
     }
 
-    public LinkedList<Object> getBindArgs() {
-        return bindArgs;
+    public LinkedList<Object> getBindingArgs() {
+        return bindingArgs;
     }
 
-    public void setBindArgs(LinkedList<Object> bindArgs) {
-        this.bindArgs = bindArgs;
+    public void setBindingArgs(LinkedList<Object> bindingArgs) {
+        this.bindingArgs = bindingArgs;
     }
 
-    public Object[] getBindArgsAsArray() {
-        if (bindArgs != null)
-            return bindArgs.toArray();
+    public Object[] getBindingArgsAsArray() {
+        if (bindingArgs != null)
+            return bindingArgs.toArray();
         return null;
     }
 
-    public String[] getBindArgsAsStringArray() {
-        if (bindArgs != null) {
-            String[] strings = new String[bindArgs.size()];
-            for (int i = 0; i < bindArgs.size(); i++) {
-                strings[i] = bindArgs.get(i).toString();
+    public String[] getBindingArgsAsStringArray() {
+        if (bindingArgs != null) {
+            String[] strings = new String[bindingArgs.size()];
+            for (int i = 0; i < bindingArgs.size(); i++) {
+                strings[i] = bindingArgs.get(i).toString();
             }
             return strings;
         }
@@ -41,10 +41,10 @@ public class SqlInfo {
     }
 
     public void addValue(Object obj) {
-        if (bindArgs == null)
-            bindArgs = new LinkedList<Object>();
+        if (bindingArgs == null)
+            bindingArgs = new LinkedList<Object>();
 
-        bindArgs.add(obj);
+        bindingArgs.add(obj);
     }
 
 }

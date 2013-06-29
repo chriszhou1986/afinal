@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </pre>
  */
 public class RequestParams {
-    private static String ENCODING = "UTF-8";
+    private static String URL_ENCODING = "UTF-8";
 
     protected ConcurrentHashMap<String, String> urlParams = new ConcurrentHashMap<String, String>();
     protected ConcurrentHashMap<String, ContentBody> fileParams = new ConcurrentHashMap<String, ContentBody>();
@@ -183,7 +183,7 @@ public class RequestParams {
             result = multipartEntity;
         } else {
             try {
-                result = new UrlEncodedFormEntity(getParamsList(), ENCODING);
+                result = new UrlEncodedFormEntity(getParamsList(), URL_ENCODING);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -203,6 +203,6 @@ public class RequestParams {
     }
 
     public String getParamString() {
-        return URLEncodedUtils.format(getParamsList(), ENCODING);
+        return URLEncodedUtils.format(getParamsList(), URL_ENCODING);
     }
 }

@@ -60,8 +60,8 @@ public class TableInfo {
                 Id id = new Id();
                 id.setColumn(FieldUtils.getColumnByField(idField));
                 id.setFieldName(idField.getName());
-                id.setSet(FieldUtils.getFieldSetMethod(clazz, idField));
-                id.setGet(FieldUtils.getFieldGetMethod(clazz, idField));
+                id.setSetMethod(FieldUtils.getFieldSetMethod(clazz, idField));
+                id.setGetMethod(FieldUtils.getFieldGetMethod(clazz, idField));
                 id.setDataType(idField.getType());
 
                 tableInfo.setId(id);

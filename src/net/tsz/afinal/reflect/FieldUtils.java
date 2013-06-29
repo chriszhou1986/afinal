@@ -47,7 +47,7 @@ public class FieldUtils {
 
     public static Method getBooleanFieldGetMethod(Class<?> clazz, String fieldName) {
         String mn = "is" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-        if (isISStart(fieldName)) {
+        if (isStartWithIs(fieldName)) {
             mn = fieldName;
         }
         try {
@@ -62,7 +62,7 @@ public class FieldUtils {
     public static Method getBooleanFieldSetMethod(Class<?> clazz, Field f) {
         String fn = f.getName();
         String mn = "set" + fn.substring(0, 1).toUpperCase() + fn.substring(1);
-        if (isISStart(f.getName())) {
+        if (isStartWithIs(f.getName())) {
             mn = "set" + fn.substring(2, 3).toUpperCase() + fn.substring(3);
         }
         try {
@@ -74,7 +74,7 @@ public class FieldUtils {
     }
 
 
-    private static boolean isISStart(String fieldName) {
+    private static boolean isStartWithIs(String fieldName) {
         if (fieldName == null || fieldName.trim().length() == 0)
             return false;
         //is开头，并且is之后第一个字母是大写 比如 isAdmin

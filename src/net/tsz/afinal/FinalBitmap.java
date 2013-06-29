@@ -25,12 +25,12 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
+import net.tsz.afinal.bitmap.callback.ImageLoadCallBack;
+import net.tsz.afinal.bitmap.callback.SimpleImageLoadCallBack;
 import net.tsz.afinal.bitmap.core.BitmapCache;
 import net.tsz.afinal.bitmap.core.BitmapCommonUtils;
 import net.tsz.afinal.bitmap.core.BitmapDisplayConfig;
 import net.tsz.afinal.bitmap.core.BitmapProcess;
-import net.tsz.afinal.bitmap.display.Displayer;
-import net.tsz.afinal.bitmap.display.SimpleDisplayer;
 import net.tsz.afinal.bitmap.download.Downloader;
 import net.tsz.afinal.bitmap.download.SimpleHttpDownloader;
 import net.tsz.afinal.core.AsyncTask;
@@ -62,8 +62,8 @@ public class FinalBitmap {
         mConfig = new FinalBitmapConfig(context);
 
         configDiskCachePath(BitmapCommonUtils.getDiskCacheDir(context, "afinalCache").getAbsolutePath());//配置缓存路径
-        configDisplayer(new SimpleDisplayer());//配置显示器
-        configDownlader(new SimpleHttpDownloader());//配置下载器
+        configImageLoadCallBack(new SimpleImageLoadCallBack());//配置显示器
+        configDownloader(new SimpleHttpDownloader());//配置下载器
     }
 
     /**
@@ -251,7 +251,7 @@ public class FinalBitmap {
      *
      * @param bitmap
      */
-    public FinalBitmap configLoadfailImage(Bitmap bitmap) {
+    public FinalBitmap configLoadFailedImage(Bitmap bitmap) {
         mConfig.defaultDisplayConfig.setLoadFailedBitmap(bitmap);
         return this;
     }
@@ -261,7 +261,7 @@ public class FinalBitmap {
      *
      * @param resId
      */
-    public FinalBitmap configLoadfailImage(int resId) {
+    public FinalBitmap configLoadFailedImage(int resId) {
         mConfig.defaultDisplayConfig.setLoadFailedBitmap(BitmapFactory.decodeResource(mContext.getResources(), resId));
         return this;
     }
@@ -290,11 +290,11 @@ public class FinalBitmap {
     /**
      * 设置下载器，比如通过ftp或者其他协议去网络读取图片的时候可以设置这项
      *
-     * @param downlader
+     * @param downloader
      * @return
      */
-    public FinalBitmap configDownlader(Downloader downlader) {
-        mConfig.downloader = downlader;
+    public FinalBitmap configDownloader(Downloader downloader) {
+        mConfig.downloader = downloader;
         mConfig.init();
         return this;
     }
@@ -302,11 +302,11 @@ public class FinalBitmap {
     /**
      * 设置显示器，比如在显示的过程中显示动画等
      *
-     * @param displayer
+     * @param imageLoadCallBack
      * @return
      */
-    public FinalBitmap configDisplayer(Displayer displayer) {
-        mConfig.displayer = displayer;
+    public FinalBitmap configImageLoadCallBack(ImageLoadCallBack imageLoadCallBack) {
+        mConfig.imageLoadCallBack = imageLoadCallBack;
         return this;
     }
 
@@ -456,13 +456,13 @@ public class FinalBitmap {
     }
 
 
-    public void display(ImageView imageView, String uri, Bitmap loadingBitmap, Bitmap laodfailBitmap) {
-        BitmapDisplayConfig displayConfig = configMap.get(String.valueOf(loadingBitmap) + "_" + String.valueOf(laodfailBitmap));
+    public void display(ImageView imageView, String uri, Bitmap loadingBitmap, Bitmap loadFailedBitmap) {
+        BitmapDisplayConfig displayConfig = configMap.get(String.valueOf(loadingBitmap) + "_" + String.valueOf(loadFailedBitmap));
         if (displayConfig == null) {
             displayConfig = getDisplayConfig();
             displayConfig.setLoadingBitmap(loadingBitmap);
-            displayConfig.setLoadFailedBitmap(laodfailBitmap);
-            configMap.put(String.valueOf(loadingBitmap) + "_" + String.valueOf(laodfailBitmap), displayConfig);
+            displayConfig.setLoadFailedBitmap(loadFailedBitmap);
+            configMap.put(String.valueOf(loadingBitmap) + "_" + String.valueOf(loadFailedBitmap), displayConfig);
         }
 
         doDisplay(imageView, uri, displayConfig);
@@ -784,7 +784,7 @@ public class FinalBitmap {
     }
 
     /**
-     * 暂停正在加载的线程，监听listview或者gridview正在滑动的时候条用词方法
+     * 暂停正在加载的线程，监听ListView或者GridView正在滑动的时候条用词方法
      *
      * @param pauseWork true停止暂停线程，false继续线程
      */
@@ -954,12 +954,12 @@ public class FinalBitmap {
                 bitmap = null;
             }
 
-            // 判断线程和当前的imageview是否是匹配
+            // 判断线程和当前的ImageView是否是匹配
             final ImageView imageView = getAttachedImageView();
             if (bitmap != null && imageView != null) {
-                mConfig.displayer.loadCompleteDisplay(imageView, bitmap, displayConfig);
+                mConfig.imageLoadCallBack.loadCompletely(imageView, bitmap, displayConfig);
             } else if (bitmap == null && imageView != null) {
-                mConfig.displayer.loadFailedDisplay(imageView, displayConfig.getLoadFailedBitmap());
+                mConfig.imageLoadCallBack.loadFailed(imageView, displayConfig.getLoadFailedBitmap());
             }
         }
 
@@ -1001,7 +1001,7 @@ public class FinalBitmap {
 
         public String cachePath;
 
-        public Displayer displayer;
+        public ImageLoadCallBack imageLoadCallBack;
         public Downloader downloader;
         public BitmapProcess bitmapProcess;
         public BitmapDisplayConfig defaultDisplayConfig;
@@ -1030,8 +1030,8 @@ public class FinalBitmap {
             if (downloader == null)
                 downloader = new SimpleHttpDownloader();
 
-            if (displayer == null)
-                displayer = new SimpleDisplayer();
+            if (imageLoadCallBack == null)
+                imageLoadCallBack = new SimpleImageLoadCallBack();
 
             bitmapProcess = new BitmapProcess(downloader, cachePath, originalDiskCacheSize);
         }

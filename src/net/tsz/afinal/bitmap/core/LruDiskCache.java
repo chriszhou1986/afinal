@@ -216,14 +216,12 @@ public final class LruDiskCache implements Closeable {
     }
 
     /**
-     * Recursively delete everything in {@code dir}.
+     * Recursively delete everything in {@code target}.
      */
-    // TODO: this should specify paths as Strings rather than as Files
-    public static void deleteContents(File dir) throws IOException {
-        File[] files = dir.listFiles();
+    public static void deleteContents(File target) throws IOException {
+        File[] files = target.listFiles();
         if (files == null) {
             return;
-//            throw new IllegalArgumentException("not a directory: " + dir);
         }
         for (File file : files) {
             if (file.isDirectory()) {

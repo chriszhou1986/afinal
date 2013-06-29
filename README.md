@@ -1,7 +1,7 @@
 
 ## 注意:
 * 这个版本是wyouflf的修改版，有少量api调整。修改的地方下面的介绍已经做了调整，有问题可以给我发邮件<wyouflf@gmail.com>。
-* 上传部分进行了重构，解决大文件上传OOM的问题，支持进度显示。
+* 上传部分进行了重构，解决大文件上传OOM的问题; 上传支持MultipartEntity，UploadFileEntity，UploadInputStreamEntity; 支持进度显示。
 * FinalActivity以替换为FinalView，修改原来的继承方式为在Activity或自定义View初始化之后调用FinalView.init(this)完成注解解析。
 
 ----

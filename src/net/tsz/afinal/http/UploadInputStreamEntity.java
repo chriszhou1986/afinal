@@ -20,12 +20,12 @@ public class UploadInputStreamEntity extends AbstractHttpEntity {
     private final InputStream content;
     private final long length;
 
-    public UploadInputStreamEntity(final InputStream instream, long length) {
+    public UploadInputStreamEntity(final InputStream inputStream, long length) {
         super();
-        if (instream == null) {
+        if (inputStream == null) {
             throw new IllegalArgumentException("Source input stream may not be null");
         }
-        this.content = instream;
+        this.content = inputStream;
         this.length = length;
 
         uploadedSize = 0;

@@ -174,8 +174,8 @@ public class ClassUtils {
                         property.setFieldName(f.getName());
                         property.setDataType(f.getType());
                         property.setDefaultValue(FieldUtils.getPropertyDefaultValue(f));
-                        property.setSet(FieldUtils.getFieldSetMethod(clazz, f));
-                        property.setGet(FieldUtils.getFieldGetMethod(clazz, f));
+                        property.setSetMethod(FieldUtils.getFieldSetMethod(clazz, f));
+                        property.setGetMethod(FieldUtils.getFieldGetMethod(clazz, f));
                         property.setField(f);
 
                         plist.add(property);
@@ -208,8 +208,8 @@ public class ClassUtils {
                     mto.setColumn(FieldUtils.getColumnByField(f));
                     mto.setFieldName(f.getName());
                     mto.setDataType(f.getType());
-                    mto.setSet(FieldUtils.getFieldSetMethod(clazz, f));
-                    mto.setGet(FieldUtils.getFieldGetMethod(clazz, f));
+                    mto.setSetMethod(FieldUtils.getFieldSetMethod(clazz, f));
+                    mto.setGetMethod(FieldUtils.getFieldGetMethod(clazz, f));
 
                     mList.add(mto);
                 }
@@ -252,8 +252,8 @@ public class ClassUtils {
                     }
 
                     otm.setDataType(f.getClass());
-                    otm.setSet(FieldUtils.getFieldSetMethod(clazz, f));
-                    otm.setGet(FieldUtils.getFieldGetMethod(clazz, f));
+                    otm.setSetMethod(FieldUtils.getFieldSetMethod(clazz, f));
+                    otm.setGetMethod(FieldUtils.getFieldGetMethod(clazz, f));
 
                     oList.add(otm);
                 }

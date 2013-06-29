@@ -106,9 +106,9 @@ public class SqlBuilder {
         TableInfo table = TableInfo.get(entity.getClass());
 
         Id id = table.getId();
-        Object idvalue = id.getValue(entity);
+        Object idValue = id.getValue(entity);
 
-        if (idvalue == null) {
+        if (idValue == null) {
             throw new DbException("getDeleteSQL:" + entity.getClass() + " id value is null");
         }
         StringBuffer strSQL = new StringBuffer(getDeleteSqlByTableName(table.getTableName()));
@@ -116,7 +116,7 @@ public class SqlBuilder {
 
         SqlInfo sqlInfo = new SqlInfo();
         sqlInfo.setSql(strSQL.toString());
-        sqlInfo.addValue(idvalue);
+        sqlInfo.addValue(idValue);
 
         return sqlInfo;
     }
@@ -343,13 +343,13 @@ public class SqlBuilder {
 
     private static KeyValue property2KeyValue(Property property, Object entity) {
         KeyValue kv = null;
-        String pcolumn = property.getColumn();
+        String key = property.getColumn();
         Object value = property.getValue(entity);
         if (value != null) {
-            kv = new KeyValue(pcolumn, value);
+            kv = new KeyValue(key, value);
         } else {
             if (property.getDefaultValue() != null && property.getDefaultValue().trim().length() != 0)
-                kv = new KeyValue(pcolumn, property.getDefaultValue());
+                kv = new KeyValue(key, property.getDefaultValue());
         }
         return kv;
     }
@@ -357,12 +357,12 @@ public class SqlBuilder {
 
     private static KeyValue manyToOne2KeyValue(ManyToOne many, Object entity) {
         KeyValue kv = null;
-        String manycolumn = many.getColumn();
-        Object manyobject = many.getValue(entity);
-        if (manyobject != null) {
-            Object manyvalue = TableInfo.get(manyobject.getClass()).getId().getValue(manyobject);
-            if (manycolumn != null && manyvalue != null) {
-                kv = new KeyValue(manycolumn, manyvalue);
+        String key = many.getColumn();
+        Object oneKey = many.getValue(entity);
+        if (oneKey != null) {
+            Object value = TableInfo.get(oneKey.getClass()).getId().getValue(oneKey);
+            if (key != null && value != null) {
+                kv = new KeyValue(key, value);
             }
         }
 

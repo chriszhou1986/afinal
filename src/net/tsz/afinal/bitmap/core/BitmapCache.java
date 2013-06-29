@@ -110,7 +110,7 @@ public class BitmapCache {
                     if (!diskCacheDir.exists()) {
                         diskCacheDir.mkdirs();
                     }
-                    if (BitmapCommonUtils.getUsableSpace(diskCacheDir) > mCacheParams.diskCacheSize) {
+                    if (BitmapCommonUtils.getAvailableSpace(diskCacheDir) > mCacheParams.diskCacheSize) {
                         try {
                             mDiskLruCache = LruDiskCache.open(diskCacheDir, 1, 1, mCacheParams.diskCacheSize);
                         } catch (final IOException e) {

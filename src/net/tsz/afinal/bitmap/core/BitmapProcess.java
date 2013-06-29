@@ -120,7 +120,7 @@ public class BitmapProcess {
             mOriginalCacheDir.mkdirs();
         }
         synchronized (mHttpDiskCacheLock) {
-            if (BitmapCommonUtils.getUsableSpace(mOriginalCacheDir) > cacheSize) {
+            if (BitmapCommonUtils.getAvailableSpace(mOriginalCacheDir) > cacheSize) {
                 try {
                     mOriginalDiskCache = LruDiskCache.open(mOriginalCacheDir, 1, 1, cacheSize);
                 } catch (IOException e) {
