@@ -1,7 +1,7 @@
 
 ## 注意:
 * 这个版本是wyouflf的修改版，有少量api调整。修改的地方下面的介绍已经做了调整，有问题可以给我发邮件<wyouflf@gmail.com>。
-* 上传部分进行了重构，解决大文件上传OOM的问题; 上传支持MultipartEntity，UploadFileEntity，UploadInputStreamEntity; 支持进度显示。
+* 上传部分进行了重构，解决大文件上传OOM的问题; 上传支持MultipartEntity(使用RequestParams添加文件或流时默认用MultipartEntity上传)，UploadFileEntity，UploadInputStreamEntity; 支持进度显示。
 * FinalActivity以替换为FinalView，修改原来的继承方式为在Activity或自定义View初始化之后调用FinalView.init(this)完成注解解析。
 
 ----
@@ -97,7 +97,7 @@ fh.get("http://www.yangfuhai.com", new AsyncCallBack(){
 文件上传到服务器，服务器如何接收，请查看[这里](http://www.oschina.net/question/105836_85825)
 
 ```java
-  AsyncParams params = new AsyncParams();
+  RequestParams params = new RequestParams();
   params.put("username", "michael yang");
   params.put("password", "123456");
   params.put("email", "test@tsz.net");

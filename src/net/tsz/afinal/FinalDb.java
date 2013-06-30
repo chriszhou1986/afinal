@@ -169,7 +169,7 @@ public class FinalDb {
      * @param entity 要保存的数据
      * @return ture： 保存成功    false:保存失败
      */
-    public boolean saveBindId(Object entity) {
+    public boolean saveBindingId(Object entity) {
         checkTableExist(entity.getClass());
         List<KeyValue> entityKvList = SqlBuilder.getSaveKeyValueListByEntity(entity);
         if (entityKvList != null && entityKvList.size() > 0) {
@@ -177,8 +177,9 @@ public class FinalDb {
             ContentValues cv = new ContentValues();
             insertContentValues(entityKvList, cv);
             Long id = db.insert(tf.getTableName(), null, cv);
-            if (id == -1)
+            if (id == -1) {
                 return false;
+            }
             tf.getId().setValue(entity, id);
             return true;
         }

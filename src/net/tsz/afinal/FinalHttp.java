@@ -208,6 +208,10 @@ public class FinalHttp {
         return postSync(url, paramsToEntity(params), null);
     }
 
+    public Object postSync(String url, RequestParams params, String contentType) {
+        return postSync(url, paramsToEntity(params), contentType);
+    }
+
     public Object postSync(String url, HttpEntity entity, String contentType) {
         HttpPost request = new HttpPost(url);
         if (entity != null) {
@@ -226,6 +230,10 @@ public class FinalHttp {
         put(url, paramsToEntity(params), null, callBack);
     }
 
+    public void put(String url, RequestParams params, String contentType, AsyncCallBack<? extends Object> callBack) {
+        put(url, paramsToEntity(params), contentType, callBack);
+    }
+
     public void put(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
         HttpPut request = new HttpPut(url);
         if (entity != null) {
@@ -241,6 +249,10 @@ public class FinalHttp {
 
     public Object putSync(String url, RequestParams params) {
         return putSync(url, paramsToEntity(params), null);
+    }
+
+    public Object putSync(String url, RequestParams params, String contentType) {
+        return putSync(url, paramsToEntity(params), contentType);
     }
 
     public Object putSync(String url, HttpEntity entity, String contentType) {
