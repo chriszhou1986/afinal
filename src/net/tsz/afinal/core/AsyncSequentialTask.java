@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @param <Result>
  * @author michael
  */
-public abstract class AsyncTask<Params, Progress, Result> {
-    private static final String LOG_TAG = "AsyncTask";
+public abstract class AsyncSequentialTask<Params, Progress, Result> {
+    private static final String LOG_TAG = "AsyncSequentialTask";
 
     private static final int CORE_POOL_SIZE = 5;
     private static final int MAXIMUM_POOL_SIZE = 128;
@@ -29,7 +29,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
         private final AtomicInteger mCount = new AtomicInteger(1);
 
         public Thread newThread(Runnable r) {
-            Thread tread = new Thread(r, "AsyncTask #" + mCount.getAndIncrement());
+            Thread tread = new Thread(r, "AsyncSequentialTask #" + mCount.getAndIncrement());
             tread.setPriority(Thread.NORM_PRIORITY - 1);
             return tread;
         }
@@ -107,7 +107,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
          */
         RUNNING,
         /**
-         * Indicates that {@link net.tsz.afinal.core.AsyncTask#onPostExecute} has finished.
+         * Indicates that {@link AsyncSequentialTask#onPostExecute} has finished.
          */
         FINISHED,
     }
@@ -129,7 +129,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
     /**
      * Creates a new asynchronous task. This constructor must be invoked on the UI thread.
      */
-    public AsyncTask() {
+    public AsyncSequentialTask() {
         mWorker = new WorkerRunnable<Params, Result>() {
             public Result call() throws Exception {
                 mTaskInvoked.set(true);
@@ -364,13 +364,13 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * <p>This method must be invoked on the UI thread.
      *
      * @param params The parameters of the task.
-     * @return This instance of AsyncTask.
+     * @return This instance of AsyncSequentialTask.
      * @throws IllegalStateException If {@link #getStatus()} returns either
-     *                               {@link net.tsz.afinal.core.AsyncTask.Status#RUNNING} or {@link net.tsz.afinal.core.AsyncTask.Status#FINISHED}.
+     *                               {@link AsyncSequentialTask.Status#RUNNING} or {@link AsyncSequentialTask.Status#FINISHED}.
      * @see #executeOnExecutor(java.util.concurrent.Executor, Object[])
      * @see #execute(Runnable)
      */
-    public final AsyncTask<Params, Progress, Result> execute(Params... params) {
+    public final AsyncSequentialTask<Params, Progress, Result> execute(Params... params) {
         return executeOnExecutor(sDefaultExecutor, params);
     }
 
@@ -380,7 +380,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * <p/>
      * <p>This method is typically used with {@link #THREAD_POOL_EXECUTOR} to
      * allow multiple tasks to run in parallel on a pool of threads managed by
-     * AsyncTask, however you can also use your own {@link java.util.concurrent.Executor} for custom
+     * AsyncSequentialTask, however you can also use your own {@link java.util.concurrent.Executor} for custom
      * behavior.
      * <p/>
      * <p><em>Warning:</em> Allowing multiple tasks to run in parallel from
@@ -399,13 +399,13 @@ public abstract class AsyncTask<Params, Progress, Result> {
      * @param exec   The executor to use.  {@link #THREAD_POOL_EXECUTOR} is available as a
      *               convenient process-wide thread pool for tasks that are loosely coupled.
      * @param params The parameters of the task.
-     * @return This instance of AsyncTask.
+     * @return This instance of AsyncSequentialTask.
      * @throws IllegalStateException If {@link #getStatus()} returns either
-     *                               {@link net.tsz.afinal.core.AsyncTask.Status#RUNNING} or {@link net.tsz.afinal.core.AsyncTask.Status#FINISHED}.
+     *                               {@link AsyncSequentialTask.Status#RUNNING} or {@link AsyncSequentialTask.Status#FINISHED}.
      * @see #execute(Object[])
      */
     @SuppressWarnings("incomplete-switch")
-    public final AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec,
+    public final AsyncSequentialTask<Params, Progress, Result> executeOnExecutor(Executor exec,
                                                                        Params... params) {
         if (mStatus != Status.PENDING) {
             switch (mStatus) {
@@ -493,10 +493,10 @@ public abstract class AsyncTask<Params, Progress, Result> {
 
     private static class AsyncTaskResult<Data> {
         @SuppressWarnings("rawtypes")
-        final AsyncTask mTask;
+        final AsyncSequentialTask mTask;
         final Data[] mData;
 
-        AsyncTaskResult(@SuppressWarnings("rawtypes") AsyncTask task, Data... data) {
+        AsyncTaskResult(@SuppressWarnings("rawtypes") AsyncSequentialTask task, Data... data) {
             mTask = task;
             mData = data;
         }

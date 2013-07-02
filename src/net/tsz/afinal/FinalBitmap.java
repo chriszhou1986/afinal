@@ -33,7 +33,7 @@ import net.tsz.afinal.bitmap.core.BitmapDisplayConfig;
 import net.tsz.afinal.bitmap.core.BitmapProcess;
 import net.tsz.afinal.bitmap.download.Downloader;
 import net.tsz.afinal.bitmap.download.SimpleHttpDownloader;
-import net.tsz.afinal.core.AsyncTask;
+import net.tsz.afinal.core.AsyncSequentialTask;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -856,7 +856,7 @@ public class FinalBitmap {
      * @company 探索者网络工作室(www.tsz.net)
      * @created 2012-10-28
      */
-    private class CacheExecuteTask extends AsyncTask<Object, Void, Void> {
+    private class CacheExecuteTask extends AsyncSequentialTask<Object, Void, Void> {
         public static final int MESSAGE_CLEAR = 0;
         public static final int MESSAGE_INIT_DISK_CACHE = 1;
         public static final int MESSAGE_FLUSH = 2;
@@ -908,7 +908,7 @@ public class FinalBitmap {
      *
      * @author michael yang
      */
-    private class BitmapLoadAndDisplayTask extends AsyncTask<Object, Void, Bitmap> {
+    private class BitmapLoadAndDisplayTask extends AsyncSequentialTask<Object, Void, Bitmap> {
         private Object data;
         private final WeakReference<ImageView> imageViewReference;
         private final BitmapDisplayConfig displayConfig;

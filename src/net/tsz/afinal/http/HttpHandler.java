@@ -16,7 +16,7 @@
 package net.tsz.afinal.http;
 
 import android.os.SystemClock;
-import net.tsz.afinal.core.AsyncTask;
+import net.tsz.afinal.core.AsyncSequentialTask;
 import net.tsz.afinal.http.entityhandler.EntityCallBack;
 import net.tsz.afinal.http.entityhandler.FileEntityHandler;
 import net.tsz.afinal.http.entityhandler.StringEntityHandler;
@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 
-public class HttpHandler<T> extends AsyncTask<Object, Object, Object> implements EntityCallBack {
+public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> implements EntityCallBack {
 
     private final AbstractHttpClient client;
     private final HttpContext context;
