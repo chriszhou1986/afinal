@@ -80,7 +80,7 @@ public class MultipartEntity implements HttpEntity {
     /**
      * Creates an instance using the specified parameters
      *
-     * @param mode     the mode to use, may be {@code null}, in which case {@link HttpMultipartMode#BROWSER_COMPATIBLE} is used
+     * @param mode     the mode to use, may be {@code null}, in which case {@link HttpMultipartMode#STRICT} is used
      * @param boundary the boundary string, may be {@code null}, in which case {@link #generateBoundary()} is invoked to create the string
      * @param charset  the character set to use, may be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. UTF-8 - is used.
      */
@@ -93,7 +93,7 @@ public class MultipartEntity implements HttpEntity {
             boundary = generateBoundary();
         }
         if (mode == null) {
-            mode = HttpMultipartMode.BROWSER_COMPATIBLE;
+            mode = HttpMultipartMode.STRICT;
         }
         this.multipart = new HttpMultipart("form-data", charset, boundary, mode);
         this.contentType = new BasicHeader(
@@ -113,10 +113,10 @@ public class MultipartEntity implements HttpEntity {
     }
 
     /**
-     * Creates an instance using mode {@link HttpMultipartMode#BROWSER_COMPATIBLE}
+     * Creates an instance using mode {@link HttpMultipartMode#STRICT}
      */
     public MultipartEntity() {
-        this(HttpMultipartMode.BROWSER_COMPATIBLE, null, null);
+        this(HttpMultipartMode.STRICT, null, null);
     }
 
     protected String generateContentType(
