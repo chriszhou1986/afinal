@@ -94,7 +94,7 @@ public class HttpMultipart {
     private static final ByteArrayBuffer TWO_DASHES = encode(MIME.DEFAULT_CHARSET, "--");
 
 
-    private final String subType;
+    private String subType;
     private final Charset charset;
     private final String boundary;
     private final List<FormBodyPart> parts;
@@ -140,6 +140,10 @@ public class HttpMultipart {
 
     public HttpMultipart(final String subType, final String boundary) {
         this(subType, null, boundary);
+    }
+
+    public void setSubType(String subType) {
+        this.subType = subType;
     }
 
     public String getSubType() {
