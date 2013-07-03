@@ -16,5 +16,16 @@
 package net.tsz.afinal.http.entityhandler;
 
 public interface EntityCallBack {
-    public void callBack(long count, long current, boolean mustNoticeUI);
+    /**
+     * @param total
+     * @param current
+     * @param forceUpdateUI
+     * @return 是否继续(上传或下载)
+     */
+    boolean updateProgress(long total, long current, boolean forceUpdateUI);
+
+    /**
+     * 停止(上传或下载)
+     */
+    void stop();
 }

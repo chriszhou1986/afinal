@@ -51,10 +51,10 @@ public abstract class AsyncCallBack<T> {
     /**
      * onLoading方法有效progress
      *
-     * @param count
+     * @param total
      * @param current
      */
-    public void onLoading(long count, long current) {
+    public void onLoading(long total, long current) {
     }
 
     public void onSuccess(T result) {

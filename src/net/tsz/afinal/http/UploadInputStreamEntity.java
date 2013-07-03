@@ -13,7 +13,7 @@ import java.io.OutputStream;
  * Date: 13-6-28
  * Time: 上午12:14
  */
-public class UploadInputStreamEntity extends AbstractHttpEntity {
+public class UploadInputStreamEntity extends AbstractHttpEntity implements UploadCallBack {
 
     private final static int BUFFER_SIZE = 2048;
 
@@ -43,49 +43,51 @@ public class UploadInputStreamEntity extends AbstractHttpEntity {
         return this.content;
     }
 
-    public EntityCallBack callback = null;
-
     private long uploadedSize;
 
-    public void writeTo(final OutputStream outstream) throws IOException {
-        if (outstream == null) {
+    public void writeTo(final OutputStream outStream) throws IOException {
+        if (outStream == null) {
             throw new IllegalArgumentException("Output stream may not be null");
         }
-        InputStream instream = this.content;
+        InputStream inStream = this.content;
         try {
             byte[] buffer = new byte[BUFFER_SIZE];
             int l;
             if (this.length < 0) {
                 // consume until EOF
-                while ((l = instream.read(buffer)) != -1) {
-                    outstream.write(buffer, 0, l);
+                while ((l = inStream.read(buffer)) != -1) {
+                    outStream.write(buffer, 0, l);
                     uploadedSize += l;
                     if (callback != null) {
-                        callback.callBack(uploadedSize, uploadedSize + 1, false);
+                        if (!callback.updateProgress(uploadedSize + 1, uploadedSize, false)) {
+                            throw new IOException("stop");
+                        }
                     }
                 }
             } else {
                 // consume no more than length
                 long remaining = this.length;
                 while (remaining > 0) {
-                    l = instream.read(buffer, 0, (int) Math.min(BUFFER_SIZE, remaining));
+                    l = inStream.read(buffer, 0, (int) Math.min(BUFFER_SIZE, remaining));
                     if (l == -1) {
                         break;
                     }
-                    outstream.write(buffer, 0, l);
+                    outStream.write(buffer, 0, l);
                     remaining -= l;
                     uploadedSize += l;
                     if (callback != null) {
-                        callback.callBack(uploadedSize, length, false);
+                        if (!callback.updateProgress(length, uploadedSize, false)) {
+                            throw new IOException("stop");
+                        }
                     }
                 }
             }
-            outstream.flush();
+            outStream.flush();
             if (callback != null) {
-                callback.callBack(uploadedSize, uploadedSize, true);
+                callback.updateProgress(length, uploadedSize, true);
             }
         } finally {
-            instream.close();
+            inStream.close();
         }
     }
 
@@ -103,4 +105,10 @@ public class UploadInputStreamEntity extends AbstractHttpEntity {
         this.content.close();
     }
 
+    private EntityCallBack callback = null;
+
+    @Override
+    public void setCallBack(EntityCallBack callBack) {
+        this.callback = callBack;
+    }
 }

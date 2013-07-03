@@ -138,7 +138,9 @@ public class StringBody extends AbstractContentBody {
         while ((l = in.read(tmp)) != -1) {
             out.write(tmp, 0, l);
             callBackInfo.pos += l;
-            callBackInfo.doCallBack(false);
+            if (!callBackInfo.doCallBack(false)) {
+                throw new IOException("stop");
+            }
         }
         out.flush();
     }

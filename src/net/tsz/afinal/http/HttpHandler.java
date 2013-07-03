@@ -152,18 +152,6 @@ public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> 
         super.onProgressUpdate(values);
     }
 
-    public boolean isStop() {
-        return mFileEntityHandler.isStop();
-    }
-
-
-    /**
-     * 停止下载任务
-     */
-    public void stop() {
-        mFileEntityHandler.setStop(true);
-    }
-
     private void handleResponse(HttpResponse response) {
         StatusLine status = response.getStatusLine();
         if (status.getStatusCode() >= 300) {
@@ -177,7 +165,7 @@ public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> 
                 HttpEntity entity = response.getEntity();
                 Object responseBody = null;
                 if (entity != null) {
-                    timeStamp = SystemClock.uptimeMillis();
+                    lastUpdateTime = SystemClock.uptimeMillis();
                     if (targetUrl != null) {
                         responseBody = mFileEntityHandler.handleEntity(entity, this, targetUrl, isResume);
                     } else {
@@ -194,22 +182,39 @@ public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> 
         }
     }
 
+    private boolean mStop = false;
 
-    private long timeStamp;
+    /**
+     * 停止下载任务
+     */
+    @Override
+    public void stop() {
+        this.mStop = true;
+    }
+
+    public boolean isStop() {
+        return mStop;
+    }
+
+    private long lastUpdateTime;
 
     @Override
-    public void callBack(long count, long current, boolean mustNoticeUI) {
+    public boolean updateProgress(long total, long current, boolean forceUpdateUI) {
+        if (mStop) {
+            return !mStop;
+        }
         if (callback != null && callback.isProgress()) {
-            if (mustNoticeUI) {
-                publishProgress(UPDATE_LOADING, count, current);
+            if (forceUpdateUI) {
+                publishProgress(UPDATE_LOADING, total, current);
             } else {
-                long thisTime = SystemClock.uptimeMillis();
-                if (thisTime - timeStamp >= callback.getRate()) {
-                    timeStamp = thisTime;
-                    publishProgress(UPDATE_LOADING, count, current);
+                long currTime = SystemClock.uptimeMillis();
+                if (currTime - lastUpdateTime >= callback.getRate()) {
+                    lastUpdateTime = currTime;
+                    publishProgress(UPDATE_LOADING, total, current);
                 }
             }
         }
+        return !mStop;
     }
 
 }

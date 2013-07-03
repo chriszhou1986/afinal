@@ -178,26 +178,26 @@ public class FinalHttp {
     }
 
     //------------------post 请求-----------------------
-    public void post(String url, AsyncCallBack<? extends Object> callBack) {
-        post(url, null, callBack);
+    public HttpHandler post(String url, AsyncCallBack<? extends Object> callBack) {
+        return post(url, null, callBack);
     }
 
-    public void post(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
-        post(url, paramsToEntity(params), null, callBack);
+    public HttpHandler post(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
+        return post(url, paramsToEntity(params), null, callBack);
     }
 
-    public void post(String url, RequestParams params, String contentType, AsyncCallBack<? extends Object> callBack) {
-        post(url, paramsToEntity(params), contentType, callBack);
+    public HttpHandler post(String url, RequestParams params, String contentType, AsyncCallBack<? extends Object> callBack) {
+        return post(url, paramsToEntity(params), contentType, callBack);
     }
 
-    public void post(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+    public HttpHandler post(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
         HttpPost request = new HttpPost(url);
         if (entity != null) {
             request.setEntity(entity);
         }
 
         setHeaders2Request(request);
-        sendRequest(request, entity, contentType, callBack);
+        return sendRequest(request, entity, contentType, callBack);
     }
 
     public Object postSync(String url) {
@@ -303,29 +303,29 @@ public class FinalHttp {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    private <T> void sendRequest(HttpRequestBase request, HttpEntity entity, String contentType, AsyncCallBack<T> callBack) {
+    private <T> HttpHandler<T> sendRequest(HttpRequestBase request, HttpEntity entity, String contentType, AsyncCallBack<T> callBack) {
         if (contentType != null) {
             request.addHeader("Content-Type", contentType);
         }
 
         HttpHandler handler = new HttpHandler(httpClient, httpContext, charset, callBack);
-        if (entity instanceof MultipartEntity) {
-            ((MultipartEntity) entity).callBackInfo.callback = handler;
-        } else if (entity instanceof UploadFileEntity) {
-            ((UploadFileEntity) entity).callback = handler;
-        } else if (entity instanceof UploadInputStreamEntity) {
-            ((UploadInputStreamEntity) entity).callback = handler;
+
+        if (entity != null && entity instanceof UploadCallBack) {
+            ((UploadCallBack) entity).setCallBack(handler);
         }
 
         handler.executeOnExecutor(executor, request);
+        return handler;
     }
 
-    protected <T> void sendRequest(HttpRequestBase request, String contentType, AsyncCallBack<T> callBack) {
+    protected <T> HttpHandler<T> sendRequest(HttpRequestBase request, String contentType, AsyncCallBack<T> callBack) {
         if (contentType != null) {
             request.addHeader("Content-Type", contentType);
         }
 
-        new HttpHandler<T>(httpClient, httpContext, charset, callBack).executeOnExecutor(executor, request);
+        HttpHandler handler = new HttpHandler(httpClient, httpContext, charset, callBack);
+        handler.executeOnExecutor(executor, request);
+        return handler;
     }
 
     protected Object sendSyncRequest(HttpRequestBase request, String contentType) {

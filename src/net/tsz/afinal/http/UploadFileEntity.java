@@ -11,15 +11,13 @@ import java.io.*;
  * Date: 13-6-24
  * Time: 下午4:45
  */
-public class UploadFileEntity extends FileEntity {
+public class UploadFileEntity extends FileEntity implements UploadCallBack {
 
     public UploadFileEntity(File file, String contentType) {
         super(file, contentType);
         fileSize = file.length();
         uploadedSize = 0;
     }
-
-    public EntityCallBack callback = null;
 
     private long fileSize;
     private long uploadedSize;
@@ -37,15 +35,24 @@ public class UploadFileEntity extends FileEntity {
                 outStream.write(tmp, 0, len);
                 uploadedSize += len;
                 if (callback != null) {
-                    callback.callBack(uploadedSize, fileSize, false);
+                    if (!callback.updateProgress(fileSize, uploadedSize, false)) {
+                        throw new IOException("stop");
+                    }
                 }
             }
             outStream.flush();
             if (callback != null) {
-                callback.callBack(uploadedSize, fileSize, true);
+                callback.updateProgress(fileSize, uploadedSize, true);
             }
         } finally {
             inStream.close();
         }
+    }
+
+    private EntityCallBack callback = null;
+
+    @Override
+    public void setCallBack(EntityCallBack callBack) {
+        this.callback = callBack;
     }
 }

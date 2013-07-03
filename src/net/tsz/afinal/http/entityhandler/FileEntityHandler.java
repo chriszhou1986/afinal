@@ -25,33 +25,16 @@ import java.io.InputStream;
 
 public class FileEntityHandler {
 
-    private boolean mStop = false;
-
-
-    public boolean isStop() {
-        return mStop;
-    }
-
-
-    public void setStop(boolean stop) {
-        this.mStop = stop;
-    }
-
-
     public Object handleEntity(HttpEntity entity, EntityCallBack callback, String target, boolean isResume) throws IOException {
-        if (TextUtils.isEmpty(target) || target.trim().length() == 0)
+        if (TextUtils.isEmpty(target) || target.trim().length() == 0) {
             return null;
+        }
 
         File targetFile = new File(target);
 
         if (!targetFile.exists()) {
             targetFile.createNewFile();
         }
-
-        if (mStop) {
-            return targetFile;
-        }
-
 
         long current = 0;
         FileOutputStream fileOutputStream = null;
@@ -62,28 +45,35 @@ public class FileEntityHandler {
             fileOutputStream = new FileOutputStream(target);
         }
 
-        if (mStop) {
-            return targetFile;
-        }
-
         InputStream inputStream = entity.getContent();
-        long count = entity.getContentLength() + current;
+        long total = entity.getContentLength() + current;
 
-        if (current >= count || mStop) {
+        if (current >= total) {
             return targetFile;
         }
 
-        int readLen = 0;
-        byte[] buffer = new byte[1024];
-        while (!mStop && !(current >= count) && ((readLen = inputStream.read(buffer, 0, 1024)) > 0)) {//未全部读取
-            fileOutputStream.write(buffer, 0, readLen);
-            current += readLen;
-            callback.callBack(count, current, false);
+        if (callback != null && !callback.updateProgress(total, current, true)) {
+            return null;
         }
-        callback.callBack(count, current, true);
 
-        if (mStop && current < count) { //用户主动停止
-            throw new IOException("user stop download thread");
+        try {
+            byte[] tmp = new byte[4096];
+            int len;
+            while ((len = inputStream.read(tmp)) != -1) {
+                fileOutputStream.write(tmp, 0, len);
+                current += len;
+                if (callback != null) {
+                    if (!callback.updateProgress(total, current, false)) {
+                        throw new IOException("stop");
+                    }
+                }
+            }
+            fileOutputStream.flush();
+            if (callback != null) {
+                callback.updateProgress(total, current, true);
+            }
+        } finally {
+            inputStream.close();
         }
 
         return targetFile;

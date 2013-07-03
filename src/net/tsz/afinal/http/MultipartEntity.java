@@ -45,9 +45,14 @@ import java.util.Random;
  *
  * @since 4.0
  */
-public class MultipartEntity implements HttpEntity {
+public class MultipartEntity implements HttpEntity, UploadCallBack {
 
-    public CallBackInfo callBackInfo = new CallBackInfo();
+    private CallBackInfo callBackInfo = new CallBackInfo();
+
+    @Override
+    public void setCallBack(EntityCallBack callBack) {
+        callBackInfo.callback = callBack;
+    }
 
     // wyouflf add： upload callback
     public static class CallBackInfo {
@@ -56,10 +61,15 @@ public class MultipartEntity implements HttpEntity {
         public long totalLength = 0;
         public long pos = 0;
 
-        public void doCallBack(boolean mustNoticeUI) {
+        /**
+         * @param forceUpdateUI
+         * @return 是否继续上传
+         */
+        public boolean doCallBack(boolean forceUpdateUI) {
             if (callback != null) {
-                callback.callBack(totalLength, pos, mustNoticeUI);
+                return callback.updateProgress(totalLength, pos, forceUpdateUI);
             }
+            return true;
         }
     }
 
