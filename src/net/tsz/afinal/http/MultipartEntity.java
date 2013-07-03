@@ -71,11 +71,15 @@ public class MultipartEntity implements HttpEntity {
                     .toCharArray();
 
     private final HttpMultipart multipart;
-    private final Header contentType;
+    private Header contentType;
 
     // @GuardedBy("dirty") // we always read dirty before accessing length
     private long length;
     private volatile boolean dirty; // used to decide whether to recalculate length
+
+    // wyouflf add
+    private final String boundary;
+    private final Charset charset;
 
     /**
      * Creates an instance using the specified parameters
@@ -92,13 +96,15 @@ public class MultipartEntity implements HttpEntity {
         if (boundary == null) {
             boundary = generateBoundary();
         }
+        this.boundary = boundary;
         if (mode == null) {
             mode = HttpMultipartMode.STRICT;
         }
-        this.multipart = new HttpMultipart("form-data", charset, boundary, mode);
+        this.charset = charset != null ? charset : MIME.DEFAULT_CHARSET;
+        this.multipart = new HttpMultipart(multipartSubtype, this.charset, this.boundary, mode);
         this.contentType = new BasicHeader(
                 HTTP.CONTENT_TYPE,
-                generateContentType(boundary, charset));
+                generateContentType(this.boundary, this.charset));
         this.dirty = true;
     }
 
@@ -119,11 +125,25 @@ public class MultipartEntity implements HttpEntity {
         this(HttpMultipartMode.STRICT, null, null);
     }
 
+    // wyouflf add
+    private String multipartSubtype = "form-data";
+
+    /**
+     * @param multipartSubtype default "form-data"
+     */
+    public void changeMultipartSubtype(String multipartSubtype) {
+        this.multipartSubtype = multipartSubtype;
+        this.multipart.setSubType(multipartSubtype);
+        this.contentType = new BasicHeader(
+                HTTP.CONTENT_TYPE,
+                generateContentType(this.boundary, this.charset));
+    }
+
     protected String generateContentType(
             final String boundary,
             final Charset charset) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("multipart/form-data; boundary=");
+        buffer.append("multipart/" + multipartSubtype + "; boundary=");
         buffer.append(boundary);
         if (charset != null) {
             buffer.append("; charset=");
