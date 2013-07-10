@@ -109,12 +109,12 @@ public class RequestParams {
         fileParams.put(key, new FileBody(file, mimeType, charset));
     }
 
-    public void put(String key, InputStream stream, String fileName) {
-        fileParams.put(key, new InputStreamBody(stream, fileName));
+    public void put(String key, InputStream stream, long length, String fileName) {
+        fileParams.put(key, new InputStreamBody(stream, length, fileName));
     }
 
-    public void put(String key, InputStream stream, String mimeType, String fileName) {
-        fileParams.put(key, new InputStreamBody(stream, mimeType, fileName));
+    public void put(String key, InputStream stream, long length, String mimeType, String fileName) {
+        fileParams.put(key, new InputStreamBody(stream, length, mimeType, fileName));
     }
 
     public void remove(String key) {
