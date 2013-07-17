@@ -16,6 +16,8 @@
 package net.tsz.afinal;
 
 import net.tsz.afinal.http.*;
+import net.tsz.afinal.http.methods.HttpCopy;
+import net.tsz.afinal.http.methods.HttpMove;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.CookieStore;
@@ -214,6 +216,94 @@ public class FinalHttp {
 
     public Object postSync(String url, HttpEntity entity, String contentType) {
         HttpPost request = new HttpPost(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        setHeaders2Request(request);
+        return sendSyncRequest(request, contentType);
+    }
+
+    //------------------move 请求-----------------------
+    public HttpHandler move(String url, AsyncCallBack<? extends Object> callBack) {
+        return move(url, null, callBack);
+    }
+
+    public HttpHandler move(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
+        return move(url, paramsToEntity(params), null, callBack);
+    }
+
+    public HttpHandler move(String url, RequestParams params, String contentType, AsyncCallBack<? extends Object> callBack) {
+        return move(url, paramsToEntity(params), contentType, callBack);
+    }
+
+    public HttpHandler move(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+        HttpMove request = new HttpMove(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+
+        setHeaders2Request(request);
+        return sendRequest(request, entity, contentType, callBack);
+    }
+
+    public Object moveSync(String url) {
+        return moveSync(url, null);
+    }
+
+    public Object moveSync(String url, RequestParams params) {
+        return moveSync(url, paramsToEntity(params), null);
+    }
+
+    public Object moveSync(String url, RequestParams params, String contentType) {
+        return moveSync(url, paramsToEntity(params), contentType);
+    }
+
+    public Object moveSync(String url, HttpEntity entity, String contentType) {
+        HttpMove request = new HttpMove(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+        setHeaders2Request(request);
+        return sendSyncRequest(request, contentType);
+    }
+
+    //------------------copy 请求-----------------------
+    public HttpHandler copy(String url, AsyncCallBack<? extends Object> callBack) {
+        return copy(url, null, callBack);
+    }
+
+    public HttpHandler copy(String url, RequestParams params, AsyncCallBack<? extends Object> callBack) {
+        return copy(url, paramsToEntity(params), null, callBack);
+    }
+
+    public HttpHandler copy(String url, RequestParams params, String contentType, AsyncCallBack<? extends Object> callBack) {
+        return copy(url, paramsToEntity(params), contentType, callBack);
+    }
+
+    public HttpHandler copy(String url, HttpEntity entity, String contentType, AsyncCallBack<? extends Object> callBack) {
+        HttpCopy request = new HttpCopy(url);
+        if (entity != null) {
+            request.setEntity(entity);
+        }
+
+        setHeaders2Request(request);
+        return sendRequest(request, entity, contentType, callBack);
+    }
+
+    public Object copySync(String url) {
+        return copySync(url, null);
+    }
+
+    public Object copySync(String url, RequestParams params) {
+        return copySync(url, paramsToEntity(params), null);
+    }
+
+    public Object copySync(String url, RequestParams params, String contentType) {
+        return copySync(url, paramsToEntity(params), contentType);
+    }
+
+    public Object copySync(String url, HttpEntity entity, String contentType) {
+        HttpCopy request = new HttpCopy(url);
         if (entity != null) {
             request.setEntity(entity);
         }
