@@ -25,9 +25,9 @@
  *
  */
 
-package net.tsz.afinal.http;
+package net.tsz.afinal.http.multipart;
 
-import net.tsz.afinal.http.content.ContentBody;
+import net.tsz.afinal.http.multipart.content.ContentBody;
 
 /**
  * FormBodyPart class represents a content body that can be used as a part of multipart encoded

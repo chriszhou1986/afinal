@@ -17,9 +17,7 @@ package net.tsz.afinal.http;
 
 import android.os.SystemClock;
 import net.tsz.afinal.core.AsyncSequentialTask;
-import net.tsz.afinal.http.entityhandler.EntityCallBack;
-import net.tsz.afinal.http.entityhandler.FileEntityHandler;
-import net.tsz.afinal.http.entityhandler.StringEntityHandler;
+import net.tsz.afinal.http.entityhandler.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -41,6 +39,12 @@ public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> 
 
     private final StringEntityHandler mStrEntityHandler = new StringEntityHandler();
     private final FileEntityHandler mFileEntityHandler = new FileEntityHandler();
+
+    private DownloadRedirectHandler downloadRedirectHandler;
+
+    public void setDownloadRedirectHandler(DownloadRedirectHandler downloadRedirectHandler) {
+        this.downloadRedirectHandler = downloadRedirectHandler;
+    }
 
     private final AsyncCallBack<T> callback;
 
@@ -154,13 +158,7 @@ public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> 
 
     private void handleResponse(HttpResponse response) {
         StatusLine status = response.getStatusLine();
-        if (status.getStatusCode() >= 300) {
-            String errorMsg = "response status error code:" + status.getStatusCode();
-            if (status.getStatusCode() == 416 && isResume) {
-                errorMsg += " \n maybe you have download complete.";
-            }
-            publishProgress(UPDATE_FAILURE, new HttpResponseException(status.getStatusCode(), status.getReasonPhrase()), errorMsg);
-        } else {
+        if (status.getStatusCode() < 300) {
             try {
                 HttpEntity entity = response.getEntity();
                 Object responseBody = null;
@@ -178,7 +176,28 @@ public class HttpHandler<T> extends AsyncSequentialTask<Object, Object, Object> 
             } catch (IOException e) {
                 publishProgress(UPDATE_FAILURE, e, e.getMessage());
             }
+        } else if (status.getStatusCode() == 302) {
+            if (downloadRedirectHandler == null) {
+                downloadRedirectHandler = new DefaultDownloadRedirectHandler();
+            }
+            HttpRequestBase request = downloadRedirectHandler.getDirectRequest(response);
+            if (request != null) {
+                try {
+                    response = client.execute(request, context);
+                    if (!isCancelled()) {
+                        handleResponse(response);
+                    }
+                } catch (IOException e) {
+                    publishProgress(UPDATE_FAILURE, e, e.getMessage());
+                }
+            }
 
+        } else {
+            String errorMsg = "response status error code:" + status.getStatusCode();
+            if (status.getStatusCode() == 416 && isResume) {
+                errorMsg += " \n maybe you have download complete.";
+            }
+            publishProgress(UPDATE_FAILURE, new HttpResponseException(status.getStatusCode(), status.getReasonPhrase()), errorMsg);
         }
     }
 

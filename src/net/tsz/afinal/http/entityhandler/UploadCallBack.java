@@ -1,6 +1,4 @@
-package net.tsz.afinal.http;
-
-import net.tsz.afinal.http.entityhandler.EntityCallBack;
+package net.tsz.afinal.http.entityhandler;
 
 /**
  * Created with IntelliJ IDEA.

@@ -24,9 +24,9 @@
  * <http://www.apache.org/>.
  *
  */
-package net.tsz.afinal.http.content;
+package net.tsz.afinal.http.multipart.content;
 
-import net.tsz.afinal.http.MIME;
+import net.tsz.afinal.http.multipart.MIME;
 
 import java.io.IOException;
 import java.io.OutputStream;

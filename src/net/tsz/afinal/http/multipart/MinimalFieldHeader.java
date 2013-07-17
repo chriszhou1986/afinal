@@ -25,7 +25,7 @@
  *
  */
 
-package net.tsz.afinal.http;
+package net.tsz.afinal.http.multipart;
 
 import java.util.*;
 

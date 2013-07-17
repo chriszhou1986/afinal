@@ -25,39 +25,20 @@
  *
  */
 
-package net.tsz.afinal.http;
+package net.tsz.afinal.http.multipart;
 
 /**
- * Minimal MIME field.
- *
  * @since 4.0
  */
-public class MinimalField {
+public enum HttpMultipartMode {
 
-    private final String name;
-    private final String value;
-
-    MinimalField(final String name, final String value) {
-        super();
-        this.name = name;
-        this.value = value;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getBody() {
-        return this.value;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(this.name);
-        buffer.append(": ");
-        buffer.append(this.value);
-        return buffer.toString();
-    }
+    /**
+     * RFC 822, RFC 2045, RFC 2046 compliant
+     */
+    STRICT,
+    /**
+     * browser-compatible mode, i.e. only write Content-Disposition; use content charset
+     */
+    BROWSER_COMPATIBLE
 
 }

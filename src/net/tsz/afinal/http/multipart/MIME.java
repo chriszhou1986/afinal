@@ -25,51 +25,25 @@
  *
  */
 
-package net.tsz.afinal.http.content;
+package net.tsz.afinal.http.multipart;
 
-import net.tsz.afinal.http.MultipartEntity;
+import java.nio.charset.Charset;
 
 /**
  * @since 4.0
  */
-public abstract class AbstractContentBody implements ContentBody {
+public final class MIME {
 
-    private final String mimeType;
-    private final String mediaType;
-    private final String subType;
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_TRANSFER_ENC = "Content-Transfer-Encoding";
+    public static final String CONTENT_DISPOSITION = "Content-Disposition";
 
-    public AbstractContentBody(final String mimeType) {
-        super();
-        if (mimeType == null) {
-            throw new IllegalArgumentException("MIME type may not be null");
-        }
-        this.mimeType = mimeType;
-        int i = mimeType.indexOf('/');
-        if (i != -1) {
-            this.mediaType = mimeType.substring(0, i);
-            this.subType = mimeType.substring(i + 1);
-        } else {
-            this.mediaType = mimeType;
-            this.subType = null;
-        }
-    }
+    public static final String ENC_8BIT = "8bit";
+    public static final String ENC_BINARY = "binary";
 
-    public String getMimeType() {
-        return this.mimeType;
-    }
+    /**
+     * The default character set to be used, i.e. "UTF-8"
+     */
+    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-    public String getMediaType() {
-        return this.mediaType;
-    }
-
-    public String getSubType() {
-        return this.subType;
-    }
-
-    protected MultipartEntity.CallBackInfo callBackInfo = MultipartEntity.CallBackInfo.DEFAULT;
-
-    @Override
-    public void setCallBackInfo(MultipartEntity.CallBackInfo callBackInfo) {
-        this.callBackInfo = callBackInfo;
-    }
 }

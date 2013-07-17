@@ -25,9 +25,9 @@
  *
  */
 
-package net.tsz.afinal.http.content;
+package net.tsz.afinal.http.multipart.content;
 
-import net.tsz.afinal.http.MultipartEntity;
+import net.tsz.afinal.http.multipart.MultipartEntity;
 
 import java.io.IOException;
 import java.io.OutputStream;

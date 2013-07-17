@@ -25,25 +25,39 @@
  *
  */
 
-package net.tsz.afinal.http;
-
-import java.nio.charset.Charset;
+package net.tsz.afinal.http.multipart;
 
 /**
+ * Minimal MIME field.
+ *
  * @since 4.0
  */
-public final class MIME {
+public class MinimalField {
 
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String CONTENT_TRANSFER_ENC = "Content-Transfer-Encoding";
-    public static final String CONTENT_DISPOSITION = "Content-Disposition";
+    private final String name;
+    private final String value;
 
-    public static final String ENC_8BIT = "8bit";
-    public static final String ENC_BINARY = "binary";
+    MinimalField(final String name, final String value) {
+        super();
+        this.name = name;
+        this.value = value;
+    }
 
-    /**
-     * The default character set to be used, i.e. "UTF-8"
-     */
-    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+    public String getName() {
+        return this.name;
+    }
+
+    public String getBody() {
+        return this.value;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(this.name);
+        buffer.append(": ");
+        buffer.append(this.value);
+        return buffer.toString();
+    }
 
 }

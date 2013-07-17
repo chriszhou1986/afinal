@@ -16,6 +16,8 @@
 package net.tsz.afinal;
 
 import net.tsz.afinal.http.*;
+import net.tsz.afinal.http.entityhandler.DownloadRedirectHandler;
+import net.tsz.afinal.http.entityhandler.UploadCallBack;
 import net.tsz.afinal.http.methods.HttpCopy;
 import net.tsz.afinal.http.methods.HttpMove;
 import org.apache.http.Header;
@@ -370,22 +372,46 @@ public class FinalHttp {
 
 
     //---------------------下载---------------------------------------
-    public HttpHandler<File> download(String url, String target, AsyncCallBack<File> callback) {
-        return download(url, null, target, false, callback);
+    public HttpHandler<File> download(String url, String target,
+                                      AsyncCallBack<File> callback) {
+        return download(url, null, target, false, null, callback);
     }
 
-
-    public HttpHandler<File> download(String url, String target, boolean isResume, AsyncCallBack<File> callback) {
-        return download(url, null, target, isResume, callback);
+    public HttpHandler<File> download(String url, String target,
+                                      DownloadRedirectHandler downloadRedirectHandler, AsyncCallBack<File> callback) {
+        return download(url, null, target, false, downloadRedirectHandler, callback);
     }
 
-    public HttpHandler<File> download(String url, RequestParams params, String target, AsyncCallBack<File> callback) {
-        return download(url, params, target, false, callback);
+    public HttpHandler<File> download(String url, String target, boolean isResume,
+                                      AsyncCallBack<File> callback) {
+        return download(url, null, target, isResume, null, callback);
     }
 
-    public HttpHandler<File> download(String url, RequestParams params, String target, boolean isResume, AsyncCallBack<File> callback) {
+    public HttpHandler<File> download(String url, String target, boolean isResume,
+                                      DownloadRedirectHandler downloadRedirectHandler, AsyncCallBack<File> callback) {
+        return download(url, null, target, isResume, downloadRedirectHandler, callback);
+    }
+
+    public HttpHandler<File> download(String url, RequestParams params, String target,
+                                      AsyncCallBack<File> callback) {
+        return download(url, params, target, false, null, callback);
+    }
+
+    public HttpHandler<File> download(String url, RequestParams params, String target,
+                                      DownloadRedirectHandler downloadRedirectHandler, AsyncCallBack<File> callback) {
+        return download(url, params, target, false, downloadRedirectHandler, callback);
+    }
+
+    public HttpHandler<File> download(String url, RequestParams params, String target, boolean isResume,
+                                      AsyncCallBack<File> callback) {
+        return download(url, params, target, isResume, null, callback);
+    }
+
+    public HttpHandler<File> download(String url, RequestParams params, String target, boolean isResume,
+                                      DownloadRedirectHandler downloadRedirectHandler, AsyncCallBack<File> callback) {
         final HttpGet request = new HttpGet(getUrlWithQueryString(url, params));
         HttpHandler<File> handler = new HttpHandler<File>(httpClient, httpContext, charset, callback);
+        handler.setDownloadRedirectHandler(downloadRedirectHandler);
         setHeaders2Request(request);
         handler.executeOnExecutor(executor, request, target, isResume);
         return handler;

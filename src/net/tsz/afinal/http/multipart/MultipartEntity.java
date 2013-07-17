@@ -25,10 +25,11 @@
  *
  */
 
-package net.tsz.afinal.http;
+package net.tsz.afinal.http.multipart;
 
-import net.tsz.afinal.http.content.ContentBody;
 import net.tsz.afinal.http.entityhandler.EntityCallBack;
+import net.tsz.afinal.http.entityhandler.UploadCallBack;
+import net.tsz.afinal.http.multipart.content.ContentBody;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.message.BasicHeader;

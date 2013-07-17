@@ -15,10 +15,11 @@
  */
 package net.tsz.afinal.http;
 
-import net.tsz.afinal.http.content.ContentBody;
-import net.tsz.afinal.http.content.FileBody;
-import net.tsz.afinal.http.content.InputStreamBody;
-import net.tsz.afinal.http.content.StringBody;
+import net.tsz.afinal.http.multipart.MultipartEntity;
+import net.tsz.afinal.http.multipart.content.ContentBody;
+import net.tsz.afinal.http.multipart.content.FileBody;
+import net.tsz.afinal.http.multipart.content.InputStreamBody;
+import net.tsz.afinal.http.multipart.content.StringBody;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.utils.URLEncodedUtils;

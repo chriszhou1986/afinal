@@ -25,9 +25,9 @@
  *
  */
 
-package net.tsz.afinal.http;
+package net.tsz.afinal.http.multipart;
 
-import net.tsz.afinal.http.content.ContentBody;
+import net.tsz.afinal.http.multipart.content.ContentBody;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.ByteArrayOutputStream;

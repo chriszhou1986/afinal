@@ -25,7 +25,7 @@
  *
  */
 
-package net.tsz.afinal.http.content;
+package net.tsz.afinal.http.multipart.content;
 
 /**
  * Represents common content properties.

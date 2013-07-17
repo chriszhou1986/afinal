@@ -1,6 +1,5 @@
-package net.tsz.afinal.http;
+package net.tsz.afinal.http.entityhandler;
 
-import net.tsz.afinal.http.entityhandler.EntityCallBack;
 import org.apache.http.entity.AbstractHttpEntity;
 
 import java.io.IOException;
